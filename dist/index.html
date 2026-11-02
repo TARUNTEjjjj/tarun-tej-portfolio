@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0e11">
+  <meta name="description" content="Tarun Tej — web developer and AI/ML enthusiast. Interactive websites, mathematical tools, Python and C++ projects, and AI response evaluation.">
+  <meta property="og:title" content="Tarun Tej — Ideas, made tangible.">
+  <meta property="og:description" content="A selection of web experiences, mathematical tools and experiments in learning.">
+  <meta property="og:type" content="website">
+  <title>Tarun Tej — Ideas, made tangible.</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="wordmark" href="#top" aria-label="Tarun Tej, home"><span class="monogram" aria-hidden="true">t<span>t</span></span><span>Tarun Tej<span class="wordmark-dot">.</span></span></a>
+    <button class="menu-toggle" aria-expanded="false" aria-controls="main-navigation" aria-label="Open navigation"><span></span><span></span></button>
+    <nav id="main-navigation" aria-label="Main navigation">
+      <a href="#work">Selected work</a><a href="#about">About</a><a href="#experience">Experience</a>
+      <a class="nav-contact" href="#contact">Let's talk <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+  <main id="main">
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="hero-glow" aria-hidden="true"></div>
+      <div class="hero-content">
+        <p class="eyebrow"><span class="status-dot"></span> WEB DEVELOPER & AI/ML ENTHUSIAST</p>
+        <h1 id="hero-title">Ideas,<br>made <em>tangible.</em></h1>
+        <p class="hero-description">I’m Tarun. I build thoughtful web experiences and explore the mathematics behind how things work.</p>
+        <div class="hero-actions"><a class="button button-light" href="#work">Explore my work <span aria-hidden="true">↘</span></a><a class="text-link light" href="assets/Avula-Tarun-Tej-Coding-Resume.pdf" target="_blank" rel="noopener">View résumé <span aria-hidden="true">↗</span></a></div>
+      </div>
+      <div class="hero-visual" aria-label="Interactive abstract sculpture">
+        <div class="sculpture-fallback" aria-hidden="true"><i></i><i></i><i></i><span></span></div>
+        <div id="hero-scene" aria-hidden="true"></div>
+        <div class="scene-caption"><span class="scene-cross">+</span><span id="scene-label">01 / THE ART OF BUILDING</span><span class="scene-cross">+</span></div>
+      </div>
+      <div class="hero-footer">
+        <span class="hero-index">INDEPENDENT MIND.<br>HANDS-ON APPROACH.</span>
+        <div class="scene-controls" aria-label="Sculpture themes">
+          <button type="button" data-mode="build" aria-pressed="true"><i></i>Build</button>
+          <button type="button" data-mode="math" aria-pressed="false"><i></i>Reason</button>
+          <button type="button" data-mode="learn" aria-pressed="false"><i></i>Explore</button>
+          <button type="button" class="motion-toggle" aria-pressed="false" aria-label="Pause animation"><span aria-hidden="true">Ⅱ</span></button>
+        </div>
+        <a class="scroll-cue" href="#work">SCROLL TO EXPLORE <span aria-hidden="true">↓</span></a>
+      </div>
+    </section>
+
+    <section class="work-section section-wrap" id="work" aria-labelledby="work-title">
+      <div class="section-heading reveal"><p class="eyebrow dark">01 — SELECTED WORK</p><div class="heading-row"><h2 id="work-title">Built to be used.<br><span>Made to be understood.</span></h2><p>From an idea on paper to something you can explore. A selection of my work across the web, mathematics and systems.</p></div></div>
+      <div class="work-filters reveal" aria-label="Filter projects"><button data-filter="all" aria-pressed="true">All work <sup>04</sup></button><button data-filter="web" aria-pressed="false">Web experiences</button><button data-filter="math" aria-pressed="false">Mathematics</button><button data-filter="systems" aria-pressed="false">Systems</button></div>
+      <p class="sr-only" id="filter-status" aria-live="polite"></p>
+      <div class="project-grid">
+        <article class="project project-axiom reveal" data-category="web math">
+          <button class="project-visual axiom-visual" data-project="axiom" aria-label="Read about Axiom SAT Math">
+            <span class="visual-label">AXIOM / SAT MATH</span>
+            <div class="math-orbit" aria-hidden="true"><span class="orbit-circle"></span><span class="orbit-circle"></span><span class="orbit-point"></span><span class="math-equation">x² + y² = r²</span></div>
+            <div class="axiom-mini" aria-hidden="true"><span>ONE QUESTION. A CLEARER WAY TO THINK.</span><strong>Find your<br>next breakthrough.</strong><div class="mini-options"><i>A</i><i>B</i><i class="chosen">C ✓</i><i>D</i></div></div>
+            <span class="visual-bottom">PRACTISE. UNDERSTAND. REPEAT.</span><span class="round-arrow" aria-hidden="true">↗</span>
+          </button>
+          <div class="project-meta"><div><p class="project-type"><i class="dot math"></i> WEB DEVELOPMENT · MATHEMATICS</p><h3>Axiom SAT Math</h3><p>SAT-style practice with generated questions, timed sessions and worked review.</p></div><button class="project-open" data-project="axiom" aria-label="Read Axiom SAT Math case study">↗</button></div>
+        </article>
+        <article class="project project-forge reveal" data-category="web">
+          <button class="project-visual forge-visual" data-project="forge" aria-label="Read about Forge">
+            <span class="visual-label">FORGE / LEARNING ACADEMY</span>
+            <div class="forge-world" aria-hidden="true"><div class="world-grid"></div><div class="world-path path-one"></div><div class="world-path path-two"></div><div class="world-path path-three"></div><div class="world-node node-one"><span>01</span></div><div class="world-node node-two"><span>02</span></div><div class="world-node node-three"><span>03</span></div><div class="world-node node-four"><span>04</span></div></div>
+            <div class="forge-title" aria-hidden="true">A new dimension<br>to learning.</div><span class="visual-bottom">PYTHON → GIT → ALGORITHMS</span><span class="round-arrow" aria-hidden="true">↗</span>
+          </button>
+          <div class="project-meta"><div><p class="project-type"><i class="dot build"></i> INTERACTIVE WEB · 3D EXPERIENCE</p><h3>Forge</h3><p>A 3D learning map with guided coding exercises and a path through technical ideas.</p></div><button class="project-open" data-project="forge" aria-label="Read Forge case study">↗</button></div>
+        </article>
+        <article class="project project-math reveal" data-category="math">
+          <button class="project-visual exact-visual" data-project="math" aria-label="Read about AxiomMath">
+            <span class="visual-label">AXIOMMATH / C++20</span>
+            <div class="fraction-art" aria-hidden="true"><div><span>1</span><hr><span>3</span></div><b>+</b><div><span>1</span><hr><span>6</span></div><b>=</b><div class="fraction-answer"><span>1</span><hr><span>2</span></div></div>
+            <span class="exact-note" aria-hidden="true">Every fraction.<br>Exactly as it should be.</span><span class="visual-bottom">EXACT ARITHMETIC. EXPLICIT BOUNDS.</span><span class="round-arrow" aria-hidden="true">↗</span>
+          </button>
+          <div class="project-meta"><div><p class="project-type"><i class="dot math"></i> C++ · MATHEMATICAL TOOLS</p><h3>AxiomMath</h3><p>Exact rational arithmetic, expression parsing and differential verification.</p></div><button class="project-open" data-project="math" aria-label="Read AxiomMath case study">↗</button></div>
+        </article>
+        <article class="project project-pocket reveal" data-category="systems">
+          <button class="project-visual pocket-visual" data-project="pocket" aria-label="Read about PocketKV">
+            <span class="visual-label">POCKETKV / STORAGE ENGINE</span>
+            <div class="storage-art" aria-hidden="true"><div class="storage-layer layer-three"><span>03</span><i></i><i></i><i></i></div><div class="storage-layer layer-two"><span>02</span><i></i><i></i><i></i></div><div class="storage-layer layer-one"><span>01</span><i></i><i></i><i></i></div></div>
+            <span class="pocket-note" aria-hidden="true">Small store.<br>Considered engineering.</span><span class="visual-bottom">PERSISTENCE / RECOVERY / VERIFICATION</span><span class="round-arrow" aria-hidden="true">↗</span>
+          </button>
+          <div class="project-meta"><div><p class="project-type"><i class="dot build"></i> C++ · SYSTEMS ENGINEERING</p><h3>PocketKV</h3><p>Persistent key-value storage with append-only logs, recovery and reproducible benchmarks.</p></div><button class="project-open" data-project="pocket" aria-label="Read PocketKV case study">↗</button></div>
+        </article>
+      </div>
+      <a class="all-code text-link reveal" href="https://github.com/TARUNTEjjjj" target="_blank" rel="noopener noreferrer">More of the thinking, in the code <span aria-hidden="true">↗</span></a>
+    </section>
+
+    <section class="about-section" id="about" aria-labelledby="about-title">
+      <div class="section-wrap about-layout">
+        <div class="about-art reveal" aria-hidden="true"><span class="art-coordinate">ANDHRA PRADESH / INDIA</span><div class="type-sculpture">t<span>t</span><i>.</i></div><div class="art-caption">A WORK IN<br>CONTINUOUS PROGRESS.</div><span class="art-year">EST. IN CURIOSITY</span></div>
+        <div class="about-copy reveal"><p class="eyebrow dark">02 — THE PERSON BEHIND THE PROJECTS</p><h2 id="about-title">Curiosity first.<br>Craft follows.</h2><p class="about-lead">I’m Tarun Tej, a web developer and AI/ML enthusiast based in Andhra Pradesh, India.</p><p>I’ve been learning web development since 2022, with around two years of hands-on building experience. Python has been part of my toolkit since 2023; I’m now going deeper into its libraries and the ideas behind them.</p><p>I enjoy turning an abstract problem into something people can use. That might be a maths practice tool, an interactive learning world, or a small C++ project that makes an engineering tradeoff visible.</p><a class="text-link" href="assets/Avula-Tarun-Tej-Coding-Resume.pdf" target="_blank" rel="noopener">Read my résumé <span aria-hidden="true">↗</span></a></div>
+      </div>
+    </section>
+
+    <section class="capabilities-section section-wrap" aria-labelledby="capabilities-title">
+      <div class="section-heading reveal"><p class="eyebrow dark">03 — THE TOOLKIT</p><h2 id="capabilities-title">Different tools.<br><span>The same attention to detail.</span></h2></div>
+      <div class="capability-list">
+        <div class="capability reveal"><span class="capability-number">01</span><h3><i class="dot build"></i>Build for the web</h3><p>Interactive, responsive websites and interfaces. Learning since 2022, with around two years of hands-on project work.</p><div class="skill-tags"><span>JavaScript</span><span>TypeScript</span><span>HTML</span><span>CSS</span><span>React</span></div></div>
+        <div class="capability reveal"><span class="capability-number">02</span><h3><i class="dot math"></i>Think through code</h3><p>Python since 2023, with ongoing exploration of its libraries. C and C++ used occasionally for algorithms and systems projects.</p><div class="skill-tags"><span>Python</span><span>NumPy</span><span>C / C++</span><span>Git</span><span>Testing</span></div></div>
+        <div class="capability reveal"><span class="capability-number">03</span><h3><i class="dot learn"></i>Explore & evaluate AI</h3><p>AI/ML learning alongside hands-on experience evaluating and grading AI-generated responses across projects.</p><div class="skill-tags"><span>Response evaluation</span><span>Written feedback</span><span>AI / ML learning</span></div></div>
+      </div>
+    </section>
+
+    <section class="experience-section section-wrap" id="experience" aria-labelledby="experience-title">
+      <div class="experience-intro reveal"><p class="eyebrow dark">04 — EXPERIENCE & LEARNING</p><h2 id="experience-title">Always a student<br>of the next idea.</h2><p>Learning, building and evaluating. Each informs the others.</p></div>
+      <div class="timeline">
+        <article class="timeline-item reveal"><span class="timeline-date">MAY 2026 — PRESENT</span><div><p class="project-type"><i class="dot learn"></i> AI RESPONSE EVALUATION</p><h3>Outlier & Mercor</h3><p>Evaluate and grade AI responses across projects, applying task-specific criteria and providing clear feedback.</p></div></article>
+        <article class="timeline-item reveal"><span class="timeline-date">JULY 2025</span><div><p class="project-type"><i class="dot learn"></i> SUMMER SCHOOL PARTICIPANT</p><h3>IIIT Hyderabad</h3><p>Attended the 9th Summer School on Artificial Intelligence, with learning focused on computer vision and machine learning.</p></div></article>
+        <article class="timeline-item reveal"><span class="timeline-date">COMPLETED JULY 2023</span><div><p class="project-type"><i class="dot math"></i> EDUCATION</p><h3>RGUKT Srikakulam</h3><p>Completed the four-semester Pre-University Course (PUC) component.</p></div></article>
+      </div>
+    </section>
+
+    <section class="teaching-section section-wrap" aria-labelledby="teaching-title"><div class="teaching-panel reveal"><div class="teaching-art" aria-hidden="true"><span class="formula-top">UNDERSTANDING &gt; MEMORISING</span><div>f<span>(</span>x<span>)</span><i>↗</i></div><span class="formula-bottom">MAKE THE REASONING VISIBLE.</span></div><div class="teaching-copy"><p class="eyebrow">A LITTLE OF WHAT I SHARE</p><h2 id="teaching-title">The best part of learning?<br>Making it clearer for someone else.</h2><p>I’ve created SAT maths videos on YouTube, explaining problems and the reasoning behind the solutions. Axiom SAT Math brings that same interest into an interactive practice experience.</p><a class="text-link light" href="https://axiom-sat.pages.dev/" target="_blank" rel="noopener noreferrer">Explore Axiom SAT Math <span aria-hidden="true">↗</span></a></div></div></section>
+
+    <section class="contact-section section-wrap" id="contact" aria-labelledby="contact-title"><div class="contact-top reveal"><p class="eyebrow dark"><span class="status-dot"></span> OPEN TO CODING & WEB PROJECTS</p><h2 id="contact-title">Have something<br><em>in mind?</em></h2><a class="contact-arrow" href="mailto:avulataruntej123@gmail.com" aria-label="Email Tarun Tej">↗</a></div><div class="contact-bottom reveal"><a class="email-link" href="mailto:avulataruntej123@gmail.com">avulataruntej123@gmail.com</a><button class="copy-email" type="button" aria-label="Copy email address">Copy email <span aria-hidden="true">⧉</span></button><span class="copy-status sr-only" aria-live="polite"></span></div></section>
+  </main>
+  <footer class="site-footer"><a class="wordmark" href="#top"><span class="monogram" aria-hidden="true">t<span>t</span></span><span>Tarun Tej.</span></a><p>Built with intention. Always in progress.</p><div><a href="https://github.com/TARUNTEjjjj" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="https://www.linkedin.com/in/a-tarun-tej-237420258/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a href="assets/Avula-Tarun-Tej-Coding-Resume.pdf" target="_blank" rel="noopener">Résumé ↗</a></div><span class="copyright">© <span id="year">2026</span> Tarun Tej</span></footer>
+  <dialog id="project-dialog" aria-labelledby="dialog-title"><button class="dialog-close" type="button" aria-label="Close project details">×</button><div id="dialog-content"></div></dialog>
+</body>
+</html>
