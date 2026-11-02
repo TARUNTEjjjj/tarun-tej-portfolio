@@ -24,16 +24,16 @@ const checks = [];
     assert.equal(await page.locator('.motion-toggle').getAttribute('aria-label'), 'Resume animation');
     await page.screenshot({ path: 'qa/desktop-hero.png' });
     checks.push('3D renders; all themes and pause control work');
-    for (const [filter, count] of [['web', 2], ['math', 2], ['systems', 1], ['all', 4]]) {
+    for (const [filter, count] of [['web', 3], ['math', 3], ['ml', 1], ['systems', 1], ['all', 6]]) {
       await page.locator(`[data-filter="${filter}"]`).click();
       assert.equal(await page.locator('.project:visible').count(), count);
     }
     checks.push('Project filters expose the correct project sets');
-    for (const project of ['axiom', 'forge', 'math', 'pocket']) {
+    for (const project of ['axiom', 'forge', 'math', 'pocket', 'storm', 'neural']) {
       const trigger = page.locator(`.project-visual[data-project="${project}"]`);
       await trigger.click();
       assert.equal(await page.locator('dialog').evaluate(element => element.open), true);
-      assert(await page.locator('.dialog-links a').count() >= 2);
+      assert(await page.locator('.dialog-links a').count() >= 1);
       await page.keyboard.press('Escape');
       assert.equal(await page.locator('dialog').evaluate(element => element.open), false);
       assert.equal(await trigger.evaluate(element => element === document.activeElement), true);
@@ -51,6 +51,8 @@ const checks = [];
     }
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(baseURL, { waitUntil: 'networkidle' });
+    assert.equal(await page.locator('#hero-scene').getAttribute('data-scene-state'), 'deferred');
+    await page.locator('.scene-enable').click();
     await page.waitForSelector('#hero-scene.scene-ready');
     await page.locator('.menu-toggle').click();
     assert.equal(await page.locator('.menu-toggle').getAttribute('aria-expanded'), 'true');
@@ -79,7 +81,7 @@ const checks = [];
     await fallbackPage.goto(baseURL, { waitUntil: 'networkidle' });
     assert.equal(await fallbackPage.locator('.sculpture-fallback').evaluate(element => getComputedStyle(element).opacity), '1');
     await fallbackPage.locator('[data-filter="math"]').click();
-    assert.equal(await fallbackPage.locator('.project:visible').count(), 2);
+    assert.equal(await fallbackPage.locator('.project:visible').count(), 3);
     checks.push('WebGL-unavailable fallback preserves content and controls');
     assert.deepEqual(errors, [], 'No browser console errors on supported WebGL path');
     console.log(JSON.stringify({ passed: checks }, null, 2));

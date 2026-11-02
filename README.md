@@ -1,6 +1,6 @@
 # Tarun Tej — Personal Portfolio
 
-A personal website for coding and web-development opportunities, with an original interactive 3D sculpture, four project case studies, experience, a résumé and contact links.
+A personal website for coding and web-development opportunities, with an original interactive 3D sculpture, six project case studies, experience, a résumé and contact links.
 
 **[Visit the portfolio](https://tarun-tej.pages.dev/)**
 
@@ -32,6 +32,7 @@ Node.js 22+ and Python 3 are recommended.
 ```sh
 npm ci
 npm run check
+npm test
 npx playwright install chromium
 # In a separate terminal: npm run dev
 npm run test:browser
@@ -40,6 +41,14 @@ npm run test:browser
 The browser suite checks the 3D scene, its themes and pause control, project filters, keyboard dismissal/focus restoration, clipboard action, the résumé download, mobile menu, viewport overflow, reduced motion and a WebGL-unavailable fallback. It writes ignored QA screenshots to `qa/`.
 
 To test an existing local Chromium installation, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` to its executable path. Set `PORTFOLIO_URL` to test a different local preview origin. The tests intentionally avoid visiting external project/contact destinations.
+
+## Upgrade 1.1
+
+Six case studies now include Neural Math Lab and StormSignal. Project links use `?project=neural` (or another known project ID), support browser Back/Forward, and offer an explicit copy action. Neural Math Lab's source stays private.
+
+The first-load HTML/CSS/UI modules total about 71 KB before compression. Desktop 3D loads after document completion, when visible and idle. Narrow screens, reduced motion, Save-Data and 2G connections keep lightweight CSS artwork until the visitor enables 3D. No external font or image request is needed. The renderer creates each theme's geometry on demand, caps decorative animation at 30fps, limits render resolution, and stops offscreen or in hidden tabs.
+
+`npm test` runs the interaction rules and bounded load-harness tests. [Capacity methodology](docs/capacity.md) explains the difference between concurrent HTTP requests and actual concurrent visitors. Reports in `docs/verification/` record measured outcomes, including failures. Existing Pages caching is retained so unversioned files can update correctly. Response headers restrict unnecessary device permissions and page/script embedding.
 
 ## Motion and accessibility
 

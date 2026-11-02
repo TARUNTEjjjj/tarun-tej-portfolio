@@ -16,6 +16,7 @@
   <script type="module" src="app.js"></script>
 </head>
 <body>
+  <noscript><style>.menu-toggle,.scene-controls,.work-filters,.project-open,.copy-email{display:none!important}.site-header nav{display:flex!important;position:static!important;flex-wrap:wrap}.site-header{height:auto;min-height:84px;flex-wrap:wrap;padding-block:18px;gap:20px}.project-visual{pointer-events:none}</style><p class="noscript-note">Project summaries, résumé and contact links work without JavaScript. Enable it for interactive case studies and 3D controls.</p></noscript>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header">
     <a class="wordmark" href="#top" aria-label="Tarun Tej, home"><span class="monogram" aria-hidden="true">t<span>t</span></span><span>Tarun Tej<span class="wordmark-dot">.</span></span></a>
@@ -39,6 +40,7 @@
         <div id="hero-scene" aria-hidden="true"></div>
         <div class="scene-caption"><span class="scene-cross">+</span><span id="scene-label">01 / THE ART OF BUILDING</span><span class="scene-cross">+</span></div>
       </div>
+      <div class="scene-access"><button id="enable-scene" class="scene-enable" type="button" hidden>Enable interactive 3D</button><p id="scene-status" role="status" aria-live="polite"></p></div>
       <div class="hero-footer">
         <span class="hero-index">INDEPENDENT MIND.<br>HANDS-ON APPROACH.</span>
         <div class="scene-controls" aria-label="Sculpture themes">
@@ -51,11 +53,30 @@
       </div>
     </section>
 
+    <aside class="portfolio-summary section-wrap" aria-label="Portfolio at a glance"><div><span>01 / BUILD</span><p>Web experiences that invite exploration.</p></div><div><span>02 / REASON</span><p>Mathematics you can follow in the code.</p></div><div><span>03 / VERIFY</span><p>Tests, clear tradeoffs and worked explanations.</p></div><a href="#work">Find a project <span aria-hidden="true">↓</span></a></aside>
+
     <section class="work-section section-wrap" id="work" aria-labelledby="work-title">
       <div class="section-heading reveal"><p class="eyebrow dark">01 — SELECTED WORK</p><div class="heading-row"><h2 id="work-title">Built to be used.<br><span>Made to be understood.</span></h2><p>From an idea on paper to something you can explore. A selection of my work across the web, mathematics and systems.</p></div></div>
-      <div class="work-filters reveal" aria-label="Filter projects"><button data-filter="all" aria-pressed="true">All work <sup>04</sup></button><button data-filter="web" aria-pressed="false">Web experiences</button><button data-filter="math" aria-pressed="false">Mathematics</button><button data-filter="systems" aria-pressed="false">Systems</button></div>
-      <p class="sr-only" id="filter-status" aria-live="polite"></p>
+      <div class="work-filters reveal" aria-label="Filter projects"><button data-filter="all" aria-pressed="true">All work <sup>06</sup></button><button data-filter="web" aria-pressed="false">Web experiences</button><button data-filter="math" aria-pressed="false">Mathematics</button><button data-filter="ml" aria-pressed="false">AI / ML</button><button data-filter="systems" aria-pressed="false">Systems</button></div>
+      <p class="filter-count" id="filter-status" aria-live="polite">6 projects · choose a card to explore the decisions behind it.</p>
       <div class="project-grid">
+        <article class="project project-neural reveal" data-category="ml math">
+          <button class="project-visual neural-visual" data-project="neural" aria-label="Read about Neural Math Lab">
+            <span class="visual-label">NEURAL MATH LAB / NUMPY</span>
+            <div class="neural-art" aria-hidden="true"><svg viewBox="0 0 460 250" fill="none"><g stroke="currentColor" opacity=".25"><path d="M65 90 215 40 380 125 215 90 65 90 215 145 380 125 215 205 65 160 215 40M65 160 215 90M65 160 215 145M65 90 215 205"/></g><g fill="currentColor"><circle cx="65" cy="90" r="12"/><circle cx="65" cy="160" r="12"/><circle cx="215" cy="40" r="12"/><circle cx="215" cy="90" r="12"/><circle cx="215" cy="145" r="12"/><circle cx="215" cy="205" r="12"/><circle cx="380" cy="125" r="17"/></g></svg><strong>Understand the learning.</strong><span>INPUT → HIDDEN LAYER → PREDICTION</span></div>
+            <span class="visual-bottom">MANUAL GRADIENTS. VISIBLE REASONING.</span><span class="round-arrow" aria-hidden="true">↗</span>
+          </button>
+          <div class="project-meta"><div><p class="project-type"><i class="dot learn"></i> PYTHON · MACHINE LEARNING</p><h3>Neural Math Lab</h3><p>Neural networks from first principles, with interactive experiments and tested mathematics.</p><div class="project-tags"><span>NumPy</span><span>Backpropagation</span><span>Offline reports</span></div></div><button class="project-open" data-project="neural" aria-label="Read Neural Math Lab case study">↗</button></div>
+        </article>
+        <article class="project project-storm reveal" data-category="web">
+          <button class="project-visual storm-visual" data-project="storm" aria-label="Read about StormSignal">
+            <span class="visual-label">STORMSIGNAL / WEATHER WITH EVIDENCE</span>
+            <div class="radar-art" aria-hidden="true"><i></i><i></i><i></i><span class="radar-sweep"></span><b></b></div><div class="storm-title" aria-hidden="true">More context.<br>Clearer decisions.</div>
+            <span class="visual-bottom">FORECASTS / SATELLITE / OFFICIAL SOURCES</span><span class="round-arrow" aria-hidden="true">↗</span>
+          </button>
+          <div class="project-meta"><div><p class="project-type"><i class="dot build"></i> WEB DEVELOPMENT · WEATHER</p><h3>StormSignal</h3><p>Weather context, satellite imagery and official-source alerts with practical low-data tools.</p><div class="project-tags"><span>Official sources</span><span>Low-data design</span></div></div><button class="project-open" data-project="storm" aria-label="Read StormSignal case study">↗</button></div>
+        </article>
+
         <article class="project project-axiom reveal" data-category="web math">
           <button class="project-visual axiom-visual" data-project="axiom" aria-label="Read about Axiom SAT Math">
             <span class="visual-label">AXIOM / SAT MATH</span>

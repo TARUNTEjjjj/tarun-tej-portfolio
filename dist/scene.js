@@ -6,10 +6,16 @@ import * as THREE from './vendor/three.module.js';
  * The element receives .scene-ready only after a successful render. Its existing
  * CSS fallback remains available if WebGL cannot start or its context is lost.
  */
-export function initScene(container) {
+export function initScene(container, { paused = false, mode: initialMode = 'build' } = {}) {
   const noop = { setMode() {}, setPaused() {}, destroy() {} };
   if (!container) return noop;
 
+  const compact = window.matchMedia('(pointer: coarse), (max-width: 767px)').matches ||
+    (navigator.hardwareConcurrency > 0 && navigator.hardwareConcurrency <= 4) ||
+    (navigator.deviceMemory > 0 && navigator.deviceMemory <= 4);
+  // This slowly moving decoration does not need a 60–120 Hz render loop.
+  const frameInterval = 1000 / 30;
+  const pixelBudget = compact ? 600_000 : 1_500_000;
   let renderer;
   try {
     renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'low-power' });
@@ -23,7 +29,6 @@ export function initScene(container) {
   canvas.tabIndex = -1;
   Object.assign(canvas.style, { display: 'block', width: '100%', height: '100%', pointerEvents: 'none' });
   renderer.setClearColor(0x000000, 0);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.15;
@@ -77,9 +82,17 @@ export function initScene(container) {
     math: { color: new THREE.Color('#eac18a'), p: 3, q: 4, z: 0.25 },
     learn: { color: new THREE.Color('#b2a0ff'), p: 2, q: 5, z: -0.38 },
   };
-  const geometries = Object.fromEntries(Object.entries(modes).map(([name, mode]) => [
-    name, new THREE.TorusKnotGeometry(1.03, name === 'learn' ? 0.205 : 0.25, 256, 32, mode.p, mode.q),
-  ]));
+  const geometries = new Map();
+  function geometryFor(name) {
+    if (!geometries.has(name)) {
+      const { p, q } = modes[name];
+      geometries.set(name, new THREE.TorusKnotGeometry(
+        1.03, name === 'learn' ? 0.205 : 0.25, compact ? 128 : 256, compact ? 16 : 24, p, q,
+      ));
+    }
+    return geometries.get(name);
+  }
+  let selectedMode = Object.hasOwn(modes, initialMode) ? initialMode : 'build';
   const metal = new THREE.MeshPhysicalMaterial({
     color: 0xd8e3e5,
     metalness: 0.94,
@@ -92,13 +105,13 @@ export function initScene(container) {
     iridescenceThicknessMaximum: 340,
     envMapIntensity: 1.1,
   });
-  const core = new THREE.Mesh(geometries.build, metal);
-  core.rotation.set(0.38, -0.28, -0.18);
+  const core = new THREE.Mesh(geometryFor(selectedMode), metal);
+  core.rotation.set(0.38, -0.28, modes[selectedMode].z);
   sculpture.add(core);
 
   const orbits = new THREE.Group();
   const orbitMaterial = new THREE.MeshBasicMaterial({
-    color: modes.build.color, transparent: true, opacity: 0.32,
+    color: modes[selectedMode].color, transparent: true, opacity: 0.32,
   });
   const orbitGeometry = new THREE.TorusGeometry(2.02, 0.004, 6, 180);
   const orbitA = new THREE.Mesh(orbitGeometry, orbitMaterial);
@@ -112,8 +125,8 @@ export function initScene(container) {
 
   const beadGeometry = new THREE.SphereGeometry(0.035, 16, 12);
   const beadMaterial = new THREE.MeshStandardMaterial({
-    color: modes.build.color, metalness: 0.5, roughness: 0.25,
-    emissive: modes.build.color, emissiveIntensity: 0.35,
+    color: modes[selectedMode].color, metalness: 0.5, roughness: 0.25,
+    emissive: modes[selectedMode].color, emissiveIntensity: 0.35,
   });
   const beads = [];
   for (let i = 0; i < 3; i += 1) {
@@ -124,14 +137,15 @@ export function initScene(container) {
     beads.push(bead);
   }
 
-  const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
   const pointer = new THREE.Vector2();
   const currentPointer = new THREE.Vector2();
-  const accent = modes.build.color.clone();
+  const accent = modes[selectedMode].color.clone();
   const tintedMetal = new THREE.Color();
   const baseMetal = new THREE.Color(0xd8e3e5);
-  let mode = modes.build;
-  let userPaused = false;
+  let mode = modes[selectedMode];
+  let userPaused = Boolean(paused);
+  rim.color.copy(accent);
+  metal.color.copy(baseMetal).lerp(accent, 0.2);
   let inViewport = true;
   let lostContext = false;
   let destroyed = false;
@@ -139,14 +153,19 @@ export function initScene(container) {
   let previousTime = performance.now();
   let elapsed = 0;
   let hasSize = false;
+  let dirty = true;
+  let pendingPointer = null;
+  let previousWidth = 0;
+  let previousHeight = 0;
+  let previousRatio = 0;
 
-  function mayAnimate() {
-    return !destroyed && !lostContext && !userPaused && !motionQuery.matches &&
-      !document.hidden && inViewport && hasSize;
+  function mayRender() {
+    return !destroyed && !lostContext && !document.hidden && inViewport && hasSize;
   }
+  function mayAnimate() { return mayRender() && !userPaused; }
 
   function paint() {
-    if (destroyed || lostContext || !hasSize) return;
+    if (!mayRender()) return;
     try {
       renderer.render(scene, camera);
       container.classList.add('scene-ready');
@@ -161,39 +180,57 @@ export function initScene(container) {
 
   function animate(now) {
     frame = 0;
-    if (!mayAnimate()) return;
-    const delta = Math.min((now - previousTime) / 1000, 0.05);
-    previousTime = now;
-    elapsed += delta;
-    const smoothing = 1 - Math.exp(-delta * 4);
-    currentPointer.lerp(pointer, smoothing);
-    accent.lerp(mode.color, 1 - Math.exp(-delta * 5));
-    rim.color.copy(accent);
-    orbitMaterial.color.copy(accent);
-    beadMaterial.color.copy(accent);
-    beadMaterial.emissive.copy(accent);
-    tintedMetal.copy(baseMetal).lerp(accent, 0.2);
-    metal.color.copy(tintedMetal);
-    sculpture.rotation.x = currentPointer.y * 0.08;
-    sculpture.rotation.y = currentPointer.x * 0.16;
-    sculpture.position.y = Math.sin(elapsed * 0.45) * 0.055;
-    core.rotation.x = 0.38 + Math.sin(elapsed * 0.2) * 0.08;
-    core.rotation.y = -0.28 + elapsed * 0.095;
-    core.rotation.z += (mode.z - core.rotation.z) * smoothing;
-    orbits.rotation.z = elapsed * 0.025;
-    paint();
+    if (!mayRender()) return;
+    const animating = mayAnimate();
+    // A single queued frame also services resize/theme changes while paused.
+    if (dirty || (animating && now - previousTime >= frameInterval - 0.5)) {
+      const delta = Math.min((now - previousTime) / 1000, 0.05);
+      previousTime = now;
+      if (animating) {
+        elapsed += delta;
+        if (pendingPointer) {
+          const bounds = container.getBoundingClientRect();
+          if (bounds.width && bounds.height) {
+            pointer.set(
+              THREE.MathUtils.clamp((pendingPointer.x - bounds.left) / bounds.width * 2 - 1, -1, 1),
+              THREE.MathUtils.clamp((pendingPointer.y - bounds.top) / bounds.height * 2 - 1, -1, 1),
+            );
+          }
+          pendingPointer = null;
+        }
+        const smoothing = 1 - Math.exp(-delta * 4);
+        currentPointer.lerp(pointer, smoothing);
+        accent.lerp(mode.color, 1 - Math.exp(-delta * 5));
+        rim.color.copy(accent);
+        orbitMaterial.color.copy(accent);
+        beadMaterial.color.copy(accent);
+        beadMaterial.emissive.copy(accent);
+        tintedMetal.copy(baseMetal).lerp(accent, 0.2);
+        metal.color.copy(tintedMetal);
+        sculpture.rotation.x = currentPointer.y * 0.08;
+        sculpture.rotation.y = currentPointer.x * 0.16;
+        sculpture.position.y = Math.sin(elapsed * 0.45) * 0.055;
+        core.rotation.x = 0.38 + Math.sin(elapsed * 0.2) * 0.08;
+        core.rotation.y = -0.28 + elapsed * 0.095;
+        core.rotation.z += (mode.z - core.rotation.z) * smoothing;
+        orbits.rotation.z = elapsed * 0.025;
+      }
+      paint();
+      dirty = false;
+    }
     if (mayAnimate()) frame = requestAnimationFrame(animate);
   }
 
   function synchronize() {
-    if (frame) cancelAnimationFrame(frame);
-    frame = 0;
-    if (destroyed) return;
-    if (mayAnimate()) {
+    if (!mayRender()) {
+      if (frame) cancelAnimationFrame(frame);
+      frame = 0;
+      return;
+    }
+    dirty = true;
+    if (!frame) {
       previousTime = performance.now();
       frame = requestAnimationFrame(animate);
-    } else {
-      paint();
     }
   }
 
@@ -201,27 +238,26 @@ export function initScene(container) {
     if (destroyed) return;
     const { width, height } = container.getBoundingClientRect();
     hasSize = width > 0 && height > 0;
-    if (!hasSize) return;
+    if (!hasSize) { synchronize(); return; }
+    const ratio = Math.min(window.devicePixelRatio || 1, compact ? 1.25 : 1.5,
+      Math.sqrt(pixelBudget / (width * height)));
+    if (width === previousWidth && height === previousHeight && ratio === previousRatio) return;
+    previousWidth = width; previousHeight = height; previousRatio = ratio;
     camera.aspect = width / height;
     camera.position.z = 2.22 / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) /
       Math.min(camera.aspect, 1);
     camera.updateProjectionMatrix();
+    renderer.setPixelRatio(ratio);
     renderer.setSize(width, height, false);
-    paint();
     synchronize();
   }
 
   function move(event) {
-    if (motionQuery.matches || userPaused) return;
-    const bounds = container.getBoundingClientRect();
-    if (bounds.width && bounds.height) {
-      pointer.set(
-        THREE.MathUtils.clamp((event.clientX - bounds.left) / bounds.width * 2 - 1, -1, 1),
-        THREE.MathUtils.clamp((event.clientY - bounds.top) / bounds.height * 2 - 1, -1, 1),
-      );
-    }
+    if (!mayAnimate() || event.pointerType === 'touch') return;
+    // Coalesce pointer samples and avoid layout work for every browser event.
+    pendingPointer = { x: event.clientX, y: event.clientY };
   }
-  function leave() { pointer.set(0, 0); }
+  function leave() { pendingPointer = null; pointer.set(0, 0); }
   function contextLost(event) {
     event.preventDefault();
     lostContext = true;
@@ -247,16 +283,20 @@ export function initScene(container) {
   container.addEventListener('pointermove', move, { passive: true });
   container.addEventListener('pointerleave', leave, { passive: true });
   document.addEventListener('visibilitychange', synchronize);
-  motionQuery.addEventListener('change', synchronize);
   canvas.addEventListener('webglcontextlost', contextLost);
   canvas.addEventListener('webglcontextrestored', contextRestored);
   resize();
+  // Report renderer availability before returning to the deferred app loader.
+  // Later theme, resize and pause changes are coalesced into scheduled frames.
+  paint();
+  dirty = false;
 
   return {
     setMode(name) {
-      if (destroyed || !Object.hasOwn(modes, name)) return;
+      if (destroyed || !Object.hasOwn(modes, name) || name === selectedMode) return;
+      selectedMode = name;
       mode = modes[name];
-      core.geometry = geometries[name];
+      core.geometry = geometryFor(name);
       if (!mayAnimate()) {
         accent.copy(mode.color);
         rim.color.copy(accent);
@@ -266,10 +306,10 @@ export function initScene(container) {
         metal.color.copy(baseMetal).lerp(accent, 0.2);
         core.rotation.z = mode.z;
       }
-      paint();
       synchronize();
     },
     setPaused(paused) {
+      if (destroyed || userPaused === Boolean(paused)) return;
       userPaused = Boolean(paused);
       synchronize();
     },
@@ -282,10 +322,9 @@ export function initScene(container) {
       container.removeEventListener('pointermove', move);
       container.removeEventListener('pointerleave', leave);
       document.removeEventListener('visibilitychange', synchronize);
-      motionQuery.removeEventListener('change', synchronize);
       canvas.removeEventListener('webglcontextlost', contextLost);
       canvas.removeEventListener('webglcontextrestored', contextRestored);
-      Object.values(geometries).forEach(geometry => geometry.dispose());
+      geometries.forEach(geometry => geometry.dispose());
       [metal, orbitGeometry, orbitMaterial, beadGeometry, beadMaterial].forEach(resource => resource.dispose());
       environment?.dispose();
       renderer.dispose();

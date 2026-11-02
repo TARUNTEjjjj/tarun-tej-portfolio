@@ -1,0 +1,58 @@
+{
+  "format": "portfolio-http-burst-v1",
+  "startedAt": "2026-11-02T16:05:46.483Z",
+  "url": "http://127.0.0.1:4174/",
+  "paths": [
+    "/"
+  ],
+  "method": "Bounded GET burst from one load generator; no browser rendering or user journeys.",
+  "configured": {
+    "concurrency": 1000,
+    "requests": 2000,
+    "durationMs": 30000,
+    "timeoutMs": 15000,
+    "maxBytes": 67108864
+  },
+  "passed": false,
+  "stopReason": "error_threshold",
+  "requests": {
+    "started": 1009,
+    "completed": 1009,
+    "successful": 0,
+    "failed": 10,
+    "cancelled": 999,
+    "errorRate": 1
+  },
+  "maximumPendingRequests": 1000,
+  "dispatchWindowMs": 100.10333299999999,
+  "elapsedMs": 122.321542,
+  "completedRequestsPerSecond": 8248.75147502637,
+  "receivedBodyBytes": 0,
+  "latencyMs": {
+    "all": {
+      "p50": 68.108667,
+      "p95": 83.525,
+      "p99": 85.39145800000001,
+      "max": 119.669625
+    },
+    "successful": {
+      "p50": null,
+      "p95": null,
+      "p99": null,
+      "max": null
+    }
+  },
+  "statuses": {},
+  "failures": {
+    "network_error": 10
+  },
+  "networkCauses": {
+    "ECONNRESET": 10
+  },
+  "cloudflareCacheStatuses": {},
+  "limits": [
+    "Pending fetches can include client connection queuing.",
+    "One machine, network path, and edge region; not 1,000 independent people or browser sessions.",
+    "Received bytes may exceed the byte limit by concurrently buffered chunks before cancellation."
+  ]
+}

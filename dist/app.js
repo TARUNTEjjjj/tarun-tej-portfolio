@@ -1,3 +1,4 @@
+import { sceneRequiresConsent, projectKeyFromURL, projectURL } from './ui-state.js';
 const $ = selector => document.querySelector(selector);
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 let paused = reducedMotion.matches;
@@ -24,18 +25,89 @@ document.querySelectorAll('[data-mode]').forEach(button => button.addEventListen
 }));
 $('.motion-toggle').addEventListener('click', () => { paused = !paused; sculpture?.setPaused(paused); updateMotionButton(); });
 reducedMotion.addEventListener('change', event => { paused = event.matches; sculpture?.setPaused(paused); updateMotionButton(); });
-import('./scene.js').then(({ initScene }) => {
-  sculpture = initScene($('#hero-scene'));
-  sculpture.setMode(mode); sculpture.setPaused(paused);
-}).catch(() => { $('#hero-scene').dataset.sceneReady = 'false'; });
-window.addEventListener('pagehide', event => { if (!event.persisted) sculpture?.destroy(); });
+const sceneContainer = $('#hero-scene');
+const sceneButton = $('.scene-enable');
+const sceneStatus = $('#scene-status');
+const narrowScreen = window.matchMedia('(max-width: 760px)');
+let sceneLoading = false;
+let sceneDisposed = false;
+let sceneVisible = false;
+let sceneIdle;
+let sceneObserver;
+function needsSceneConsent() {
+  return sceneRequiresConsent({ reducedMotion: reducedMotion.matches, narrow: narrowScreen.matches,
+    saveData: navigator.connection?.saveData, effectiveType: navigator.connection?.effectiveType });
+}
+function sceneState(state, message) {
+  sceneContainer.dataset.sceneState = state;
+  if (sceneStatus) sceneStatus.textContent = message;
+  if (sceneButton) {
+    sceneButton.hidden = state === 'ready';
+    sceneButton.disabled = state === 'loading' || state === 'fallback';
+    sceneButton.textContent = state === 'loading' ? 'Loading 3D…' : state === 'fallback' ? 'Static artwork active' : 'Enable 3D';
+  }
+  $('.motion-toggle').disabled = state !== 'ready';
+}
+sceneState('deferred', needsSceneConsent() ? 'Lightweight artwork. Enable 3D to explore the sculpture.' : 'Interactive sculpture loads when you view it.');
+async function loadScene() {
+  if (sculpture || sceneLoading || sceneDisposed) return;
+  sceneLoading = true;
+  sceneState('loading', 'Preparing the interactive sculpture.');
+  try {
+    const { initScene } = await import('./scene.js');
+    if (sceneDisposed) return;
+    sculpture = initScene(sceneContainer, { mode, paused });
+    sculpture.setMode(mode); sculpture.setPaused(paused);
+    const ready = sceneContainer.dataset.sceneReady === 'true';
+    sceneState(ready ? 'ready' : 'fallback', ready ? 'Interactive sculpture ready. Choose a theme or pause the motion.' : '3D is unavailable here. The lightweight artwork remains visible.');
+  } catch {
+    sceneContainer.dataset.sceneReady = 'false';
+    sceneState('fallback', '3D could not load. All projects and contact links remain available.');
+  } finally { sceneLoading = false; }
+}
+function scheduleScene() {
+  if (sceneIdle || sculpture || sceneLoading || sceneDisposed || !sceneVisible || document.hidden || needsSceneConsent() || document.readyState !== 'complete') return;
+  const start = () => {
+    sceneIdle = null;
+    // Recheck after idle: scrolling, data preferences or visibility may have changed.
+    if (sceneVisible && !document.hidden && !needsSceneConsent()) void loadScene();
+  };
+  sceneIdle = 'requestIdleCallback' in window ? window.requestIdleCallback(start, { timeout: 1800 }) : window.setTimeout(start, 200);
+}
+sceneButton?.addEventListener('click', () => { void loadScene(); });
+if ('IntersectionObserver' in window) {
+  sceneObserver = new IntersectionObserver(entries => {
+    sceneVisible = entries.some(entry => entry.isIntersecting);
+    scheduleScene();
+  }, { threshold: 0.05 });
+  sceneObserver.observe(sceneContainer);
+} else { sceneVisible = true; }
+if (document.readyState === 'complete') scheduleScene();
+else window.addEventListener('load', scheduleScene, { once: true });
+document.addEventListener('visibilitychange', scheduleScene);
+narrowScreen.addEventListener('change', scheduleScene);
+reducedMotion.addEventListener('change', scheduleScene);
+navigator.connection?.addEventListener?.('change', scheduleScene);
+window.addEventListener('pagehide', event => {
+  if (event.persisted) return;
+  sceneDisposed = true;
+  sceneObserver?.disconnect();
+  if (sceneIdle) {
+    if ('cancelIdleCallback' in window) window.cancelIdleCallback(sceneIdle);
+    else clearTimeout(sceneIdle);
+  }
+  sculpture?.destroy();
+});
+
 
 const menuToggle = $('.menu-toggle');
 const navigation = $('#main-navigation');
-function closeMenu() {
+function closeMenu({ restoreFocus = false } = {}) {
+  const wasOpen = menuToggle.getAttribute('aria-expanded') === 'true';
   navigation.classList.remove('open');
   menuToggle.setAttribute('aria-expanded', 'false');
   menuToggle.setAttribute('aria-label', 'Open navigation');
+  if (restoreFocus && wasOpen) menuToggle.focus();
 }
 menuToggle.addEventListener('click', () => {
   const expanded = menuToggle.getAttribute('aria-expanded') !== 'true';
@@ -43,8 +115,18 @@ menuToggle.addEventListener('click', () => {
   menuToggle.setAttribute('aria-expanded', String(expanded));
   menuToggle.setAttribute('aria-label', expanded ? 'Close navigation' : 'Open navigation');
 });
-navigation.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMenu));
-document.addEventListener('keydown', event => { if (event.key === 'Escape') closeMenu(); });
+navigation.querySelectorAll('a').forEach(link => link.addEventListener('click', () => closeMenu()));
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && menuToggle.getAttribute('aria-expanded') === 'true') closeMenu({ restoreFocus: true });
+});
+document.addEventListener('pointerdown', event => {
+  if (!navigation.contains(event.target) && !menuToggle.contains(event.target)) closeMenu();
+});
+document.addEventListener('focusin', event => {
+  if (!navigation.contains(event.target) && !menuToggle.contains(event.target)) closeMenu();
+});
+narrowScreen.addEventListener('change', event => { if (!event.matches) closeMenu(); });
+
 
 const projects = {
   axiom: {
@@ -79,23 +161,81 @@ const projects = {
     note: 'The benchmark describes small, warm-cache local workloads. It is not a general performance guarantee or a certification of power-loss durability.',
     links: [['Explore the code', 'https://github.com/TARUNTEjjjj/pocketkv'], ['Read the benchmark', 'https://github.com/TARUNTEjjjj/pocketkv/blob/main/docs/benchmarks.md'], ['Storage design', 'https://github.com/TARUNTEjjjj/pocketkv/blob/main/docs/engineering.md']],
   },
+  storm: {
+    label: 'WEB DEVELOPMENT / WEATHER AWARENESS', title: 'StormSignal',
+    lead: 'Weather information designed to stay useful when connectivity becomes unreliable.',
+    built: 'A weather situational-awareness website with satellite imagery, forecast information, official alert sources and a lightweight mode for limited connections.',
+    details: ['Official local weather sources provide context for supported locations.', 'Satellite views complement forecasts with a view of changing conditions.', 'Offline preparation and reduced-data features help visitors retain useful information when a connection drops.'],
+    note: 'Availability and freshness vary by location and source. Cached information can become outdated; follow current instructions from local emergency authorities.',
+    links: [['Explore StormSignal', 'https://stormsignal-weather.gardenroot512.chatgpt.site/'], ['Explore the code', 'https://github.com/TARUNTEjjjj/stormsignal']],
+  },
+  neural: {
+    label: 'PYTHON / NEURAL NETWORKS', title: 'Neural Math Lab',
+    lead: 'An inspectable neural network that connects matrix operations, derivatives and actual model predictions.',
+    built: 'A NumPy learning project with manual backpropagation, SGD and Adam optimizers, and self-contained reports for XOR, moons and circles experiments.',
+    details: ['Interactive reports replay saved checkpoints and trace a point through each layer.', 'Training-only preprocessing and validation selection keep held-out test examples separate.', '105 Python tests and 5 JavaScript tests check the mathematics, saved models, reports and browser prediction agreement.'],
+    note: 'A private learning project. Recorded results describe particular synthetic datasets and seeds; they are not a guarantee of real-world accuracy. The source remains private.',
+    links: [['Ask about the project', 'mailto:avulataruntej123@gmail.com?subject=Neural%20Math%20Lab']],
+  },
+
 };
 const dialog = $('#project-dialog');
 let dialogTrigger;
-document.querySelectorAll('[data-project]').forEach(button => button.addEventListener('click', () => {
-  const project = projects[button.dataset.project];
-  dialogTrigger = button;
-  // Authored local content only. No remote or user-provided HTML is accepted.
-  $('#dialog-content').innerHTML = `<p class="dialog-eyebrow">${project.label}</p><h2 id="dialog-title">${project.title}</h2><p class="dialog-lead">${project.lead}</p><div class="dialog-section"><h3>What I built</h3><p>${project.built}</p></div><div class="dialog-section"><h3>Inside the project</h3><ul>${project.details.map(detail => `<li>${detail}</li>`).join('')}</ul></div><div class="dialog-section"><p>${project.note}</p></div><div class="dialog-links">${project.links.map(([label, url]) => `<a class="text-link" href="${url}" target="_blank" rel="noopener noreferrer">${label}<span aria-hidden="true">↗</span></a>`).join('')}</div>`;
-  dialog.showModal(); document.body.style.overflow = 'hidden'; dialog.scrollTop = 0;
+let currentProject;
+let previousBodyOverflow = '';
+function showProject(key, trigger) {
+  const project = projects[key];
+  if (!project) return;
+  dialogTrigger = trigger || document.querySelector(`.project-visual[data-project="${key}"]`);
+  currentProject = key;
+  // Authored local content only. The URL selects an allowlisted project, never HTML.
+  $('#dialog-content').innerHTML = `<p class="dialog-eyebrow">${project.label}</p><h2 id="dialog-title">${project.title}</h2><p class="dialog-lead">${project.lead}</p><div class="dialog-section"><h3>What I built</h3><p>${project.built}</p></div><div class="dialog-section"><h3>Inside the project</h3><ul>${project.details.map(detail => `<li>${detail}</li>`).join('')}</ul></div><div class="dialog-section"><p>${project.note}</p></div><div class="dialog-links">${project.links.map(([label, url]) => `<a class="text-link" href="${url}" target="_blank" rel="noopener noreferrer">${label}<span aria-hidden="true">↗</span></a>`).join('')}</div><button class="copy-project-link" type="button">Copy project link</button><p class="project-link-status sr-only" aria-live="polite"></p>`;
+  if (!dialog.open) {
+    previousBodyOverflow = document.body.style.overflow;
+    dialog.showModal();
+    document.body.style.overflow = 'hidden';
+  }
+  dialog.scrollTop = 0;
   $('.dialog-close').focus();
+  $('.copy-project-link').addEventListener('click', async event => {
+    const button = event.currentTarget;
+    const status = $('.project-link-status');
+    try {
+      await navigator.clipboard.writeText(new URL(projectURL(location.href, key), location.href).href);
+      button.textContent = 'Link copied';
+      status.textContent = 'Project link copied to clipboard.';
+    } catch { status.textContent = 'Copy unavailable. You can copy this page’s address from your browser.'; }
+  });
+}
+function closeProject() {
+  if (!dialog.open) return;
+  dialog.close();
+  if (history.state?.portfolioProject === currentProject) history.back();
+  else history.replaceState(history.state, '', projectURL(location.href, null));
+}
+function syncProjectURL() {
+  const key = projectKeyFromURL(location.href, Object.keys(projects));
+  if (key) showProject(key);
+  else if (dialog.open) dialog.close();
+}
+document.querySelectorAll('[data-project]').forEach(button => button.addEventListener('click', () => {
+  const key = button.dataset.project;
+  if (!Object.hasOwn(projects, key)) return;
+  history.pushState({ ...history.state, portfolioProject: key }, '', projectURL(location.href, key));
+  showProject(key, button);
 }));
-$('.dialog-close').addEventListener('click', () => dialog.close());
+$('.dialog-close').addEventListener('click', closeProject);
+dialog.addEventListener('cancel', event => { event.preventDefault(); closeProject(); });
 dialog.addEventListener('click', event => {
   const bounds = dialog.getBoundingClientRect();
-  if (event.target === dialog && (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom)) dialog.close();
+  if (event.target === dialog && (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom)) closeProject();
 });
-dialog.addEventListener('close', () => { document.body.style.overflow = ''; dialogTrigger?.focus({ preventScroll: true }); });
+dialog.addEventListener('close', () => {
+  document.body.style.overflow = previousBodyOverflow;
+  if (dialogTrigger && !dialogTrigger.closest('[hidden]')) dialogTrigger.focus({ preventScroll: true });
+});
+window.addEventListener('popstate', syncProjectURL);
+syncProjectURL();
 
 document.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => {
   const filter = button.dataset.filter;

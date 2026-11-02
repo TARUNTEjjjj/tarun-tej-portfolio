@@ -1,13 +1,17 @@
 {
   "name": "tarun-tej-portfolio",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Personal portfolio with an original interactive 3D sculpture and coding project case studies.",
   "type": "module",
   "scripts": {
     "dev": "python3 -m http.server 4173 --bind 127.0.0.1 --directory dist",
-    "check": "node --check dist/app.js && node --check dist/scene.js && node scripts/check.mjs",
-    "test:browser": "node scripts/browser-smoke.cjs"
+    "check": "node --check dist/app.js && node --check dist/scene.js && node --check dist/ui-state.js && node scripts/check.mjs",
+    "test:browser": "node scripts/browser-smoke.cjs",
+    "test": "node --test scripts/*.test.mjs",
+    "test:load": "node scripts/load-test.mjs"
   },
-  "devDependencies": { "playwright": "1.62.1" }
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
 }
