@@ -7,10 +7,10 @@ Checked on 2 November 2026. The private source repository is `TARUNTEjjjj/tarun-
 - Source syntax, local assets, module imports, unique section IDs, anchor targets, and PDF signature passed.
 - 13 Node tests passed: four interaction/URL rules and nine load-harness/static-fixture checks. Timeout, abort, redirect, byte-budget, status, and percentile behavior are covered.
 - Desktop browser checks verified 3D readiness, theme changes, pause, all five project filters, Neural Math Lab details, project-link copy feedback, Escape dismissal/focus restoration, and browser Forward/Back restoration.
-- Responsive fixtures with 390px and 320px iframe viewports produced document widths/scroll widths of 375/375 and 305/305 (scrollbars account for the difference). Lightweight artwork was active before opting into 3D. These are browser layout checks, not physical phone benchmarks. This browser's viewport override did not apply, and pointer interaction inside its iframe fixtures was unavailable, so mobile menu/opt-in interaction remains a manual release check.
+- Responsive fixtures with 390px and 320px iframe viewports produced document widths/scroll widths of 375/375 and 305/305 (scrollbars account for the difference). Lightweight artwork was active before opting into 3D. These are browser layout checks, not physical phone benchmarks. The local review browser's viewport override did not apply, and pointer interaction inside its iframe fixtures was unavailable. The separate isolated CI browser subsequently verified the mobile menu and 3D opt-in successfully.
 - First-load HTML, stylesheet, and UI modules: approximately 71 KB uncompressed. Optional vendored Three.js modules total about 2 MB uncompressed and are deferred on narrow/reduced-motion/data-saving paths. No external font request is required.
 
-The existing Playwright smoke script has been updated for six projects and mobile opt-in; it is supplied for reproducible independent testing. It was not executed locally during this update. The checked paths above used the connected review browser.
+The Playwright smoke script ran successfully in isolated GitHub Actions on commit `c754fe1a44e51decd342a4538631db0c7e892834`: [run 41481072115](https://github.com/TARUNTEjjjj/tarun-tej-portfolio/actions/runs/41481072115). Chromium verified all six case-study dialogs and focus restoration, filters, email clipboard copy, résumé download, 3D themes/pause, mobile menu and opt-in, no overflow at 320/390/768/1024/1440px, reduced motion, and the WebGL-unavailable fallback. This is functional browser coverage, not a physical-device or sustained-user benchmark. Source checks and all 13 Node tests also passed in that run.
 
 ## Local burst limitation
 
@@ -35,4 +35,13 @@ A bounded ramp against that exact deployment produced:
 
 Raw reports are `docs/verification/deployment-*.json`. The test used one local machine, one network path, GET `/`, complete response-body consumption, a 30-second global limit, and 15-second request timeouts. Pending fetches can include client queuing. It neither counts current visitors nor certifies a sustained 1,000-user experience, browser rendering, or regional availability. The p95 latency is part of the result and should not be omitted from a performance claim.
 
-An earlier 20-request-concurrency check hit the previous production version while the canonical domain was propagating; that report is explicitly named `previous-version-live-20.json` and is not evidence for the new release.
+An earlier 20-request-concurrency check hit the previous production version while the canonical domain still served the original assets; that report is explicitly named `previous-version-live-20.json` and is not evidence for the new release.
+
+
+## Main-domain issue still open
+
+As of 2 November 2026 at 16:33 UTC, `https://tarun-tej.pages.dev/` still served the original 16,135-byte HTML and returned HTTP 404 for `/ui-state.js`. The tested upgraded deployment served 20,011-byte HTML and the UI module with HTTP 200, matching committed bytes and including CSP headers.
+
+A second successful Production/main publish (`f70359ab-e21d-4add-a325-ea51fb1a9ad5`, identical website assets) did not resolve this. Cloudflare's supported rollback control then successfully selected the earlier **upgraded** deployment `60000d63-aab9-4a6e-9170-9a3d512ae5cd` as active production; the dashboard confirmed that selection. Fresh HTTP requests and the review browser still received the original site at the main address afterward. Current Date and differing CF-Ray values were recorded, so this is not explained by browser cache alone. The exact provider routing/cache cause remains unconfirmed.
+
+Use the verified release at **https://60000d63.tarun-tej.pages.dev/** while the main-domain issue remains unresolved. `docs/verification/production-domain-check.json` preserves both response comparisons and Cloudflare request identifiers for follow-up. Do not claim the canonical domain is updated until its assets match the release. No additional deployments or broad account changes are needed without new evidence.
