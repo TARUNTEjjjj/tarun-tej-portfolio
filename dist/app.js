@@ -12,7 +12,6 @@ const modeLabels = {
 function updateMotionButton() {
   const button = $('.motion-toggle');
   button.setAttribute('aria-pressed', String(paused));
-  button.setAttribute('aria-label', paused ? 'Resume animation' : 'Pause animation');
   button.firstElementChild.textContent = paused ? '▶' : 'Ⅱ';
 }
 updateMotionButton();

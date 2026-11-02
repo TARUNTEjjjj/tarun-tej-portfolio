@@ -21,7 +21,8 @@ const checks = [];
       assert.equal(await page.locator(`[data-mode="${mode}"]`).getAttribute('aria-pressed'), 'true');
     }
     await page.locator('.motion-toggle').click();
-    assert.equal(await page.locator('.motion-toggle').getAttribute('aria-label'), 'Resume animation');
+    assert.equal(await page.locator('.motion-toggle').getAttribute('aria-pressed'), 'true');
+    assert.equal(await page.locator('.motion-toggle').getAttribute('aria-label'), 'Pause animation');
     await page.screenshot({ path: 'qa/desktop-hero.png' });
     checks.push('3D renders; all themes and pause control work');
     for (const [filter, count] of [['web', 3], ['math', 3], ['ml', 1], ['systems', 1], ['all', 6]]) {
