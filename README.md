@@ -2,6 +2,8 @@
 
 A personal website for coding and web-development opportunities, with an original interactive 3D sculpture, four project case studies, experience, a résumé and contact links.
 
+**[Visit the portfolio](https://tarun-tej.pages.dev/)**
+
 ## Run locally
 
 ```sh
@@ -45,11 +47,23 @@ The 3D scene respects reduced motion, pauses offscreen and in hidden tabs, caps 
 
 ## Privacy and maintenance
 
-Source is intended for a private GitHub repository. The initial hosted preview is owner-private. Source visibility and website audience are separate settings; publishing this repository does not itself publish the website.
+The website is public at `https://tarun-tej.pages.dev/`. Its GitHub source repository remains private. Only `dist/` is uploaded to the website; repository files and development tools are not served.
 
 There is no analytics, tracking pixel, contact form backend or remote font request. Contact uses `mailto:` and an explicit copy button. Repository links, work dates and résumé information are editorial content and should be reviewed as they change. A YouTube description is included; add the channel URL only when the owner supplies it.
 
 The content describes summer-school attendance rather than a research appointment, PUC completion rather than a B.Tech enrolment, and occasional C/C++ use. It distinguishes Forge's 3D learning map from Axiom SAT's interactive maths practice.
+
+## Deploy
+
+The production project is `tarun-tej` on Cloudflare Pages, using Direct Upload and the `main` production branch. Authenticate in your own account before deployment:
+
+```sh
+npx wrangler@4.156.1 login --scopes account:read user:read pages:write
+npm run check
+npx wrangler@4.156.1 pages deploy dist --project-name tarun-tej --branch main
+```
+
+Commit and push source changes to the private GitHub repository before deploying. GitHub runs the source checks; deployments are performed explicitly with the command above. Do not place credentials in source or in `dist/`. The canonical URL, sitemap and robots file point to the production address. The Pages `_headers` file supplies response headers, and `404.html` handles missing paths.
 
 ## Third-party software
 
