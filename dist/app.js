@@ -171,7 +171,7 @@ const projects = {
     built: 'A weather situational-awareness website with satellite imagery, forecast information, official alert sources and a lightweight mode for limited connections.',
     details: ['Official local weather sources provide context for supported locations.', 'Satellite views complement forecasts with a view of changing conditions.', 'Offline preparation and reduced-data features help visitors retain useful information when a connection drops.'],
     note: 'Availability and freshness vary by location and source. Cached information can become outdated; follow current instructions from local emergency authorities.',
-    links: [['Explore StormSignal', 'https://stormsignal-weather.gardenroot512.chatgpt.site/'], ['Explore the code', 'https://github.com/TARUNTEjjjj/stormsignal']],
+    links: [['Explore StormSignal', 'https://stormsignal-weather.pages.dev/'], ['Explore the code', 'https://github.com/TARUNTEjjjj/stormsignal']],
   },
   neural: {
     label: 'PYTHON / NEURAL NETWORKS', title: 'Neural Math Lab',
