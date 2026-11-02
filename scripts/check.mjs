@@ -9,7 +9,7 @@ for (const [, value] of html.matchAll(/\b(?:src|href)="([^"]+)"/g)) {
   if (value.startsWith('#')) assert(ids.includes(value.slice(1)), `Missing anchor ${value}`);
   else if (!/^(https?:|mailto:|data:)/.test(value)) assert(existsSync(resolve(root, value)), `Missing local asset ${value}`);
 }
-for (const path of ['app.js', 'scene.js', 'vendor/three.module.js']) {
+for (const path of ['app.js', 'scene.js', 'ui-state.js', 'vendor/three.module.js', 'vendor/three.core.js']) {
   const source = readFileSync(resolve(root, path), 'utf8');
   for (const [, value] of source.matchAll(/(?:from\s*|import\s*\()['"](\.[^'"]+)['"]/g)) {
     assert(existsSync(resolve(root, dirname(path), value)), `Missing module ${value}`);
@@ -17,3 +17,8 @@ for (const path of ['app.js', 'scene.js', 'vendor/three.module.js']) {
 }
 assert(readFileSync(resolve(root, 'assets/Avula-Tarun-Tej-Coding-Resume.pdf')).subarray(0, 5).equals(Buffer.from('%PDF-')), 'Résumé must be a PDF.');
 console.log('Local assets, module imports, section anchors and résumé PDF verified.');
+
+const files = ['index.html', 'styles.css', 'app.js', 'ui-state.js'];
+const entryBytes = files.reduce((sum, name) => sum + readFileSync(resolve(root, name)).byteLength, 0);
+assert(entryBytes < 100_000, 'First-load source must remain under 100 KB before compression.');
+console.log(`First-load HTML/CSS/UI: ${entryBytes} bytes before compression; 3D is optional.`);
