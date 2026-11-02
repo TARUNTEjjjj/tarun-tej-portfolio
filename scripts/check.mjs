@@ -1,0 +1,19 @@
+import { readFileSync, existsSync } from 'node:fs';
+import { resolve, dirname } from 'node:path';
+import assert from 'node:assert/strict';
+const root = resolve(import.meta.dirname, '..', 'dist');
+const html = readFileSync(resolve(root, 'index.html'), 'utf8');
+const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
+assert.equal(new Set(ids).size, ids.length, 'HTML IDs must be unique.');
+for (const [, value] of html.matchAll(/\b(?:src|href)="([^"]+)"/g)) {
+  if (value.startsWith('#')) assert(ids.includes(value.slice(1)), `Missing anchor ${value}`);
+  else if (!/^(https?:|mailto:|data:)/.test(value)) assert(existsSync(resolve(root, value)), `Missing local asset ${value}`);
+}
+for (const path of ['app.js', 'scene.js', 'vendor/three.module.js']) {
+  const source = readFileSync(resolve(root, path), 'utf8');
+  for (const [, value] of source.matchAll(/(?:from\s*|import\s*\()['"](\.[^'"]+)['"]/g)) {
+    assert(existsSync(resolve(root, dirname(path), value)), `Missing module ${value}`);
+  }
+}
+assert(readFileSync(resolve(root, 'assets/Avula-Tarun-Tej-Coding-Resume.pdf')).subarray(0, 5).equals(Buffer.from('%PDF-')), 'Résumé must be a PDF.');
+console.log('Local assets, module imports, section anchors and résumé PDF verified.');
