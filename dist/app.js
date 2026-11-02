@@ -231,9 +231,16 @@ document.querySelectorAll('[data-project]').forEach(button => button.addEventLis
 }));
 $('.dialog-close').addEventListener('click', closeProject);
 dialog.addEventListener('cancel', event => { event.preventDefault(); closeProject(); });
-dialog.addEventListener('click', event => {
+const outsideDialog = event => {
   const bounds = dialog.getBoundingClientRect();
-  if (event.target === dialog && (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom)) closeProject();
+  return event.target === dialog && (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom);
+};
+// Close only for a single click that started and ended on the backdrop, not a double-click or a drag out of the dialog.
+let backdropPress = false;
+dialog.addEventListener('pointerdown', event => { backdropPress = outsideDialog(event); });
+dialog.addEventListener('click', event => {
+  if (backdropPress && event.detail <= 1 && outsideDialog(event)) closeProject();
+  backdropPress = false;
 });
 dialog.addEventListener('close', () => {
   document.body.style.overflow = previousBodyOverflow;
