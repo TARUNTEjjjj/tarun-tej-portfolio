@@ -1,0 +1,67 @@
+{
+  "checkedAt": "2026-11-02T16:33:50.408Z",
+  "activeProductionDeployment": "60000d63-aab9-4a6e-9170-9a3d512ae5cd",
+  "recovery": "Cloudflare dashboard rollback selected this tested upgraded deployment; canonical domain still returned the old assets afterward.",
+  "results": [
+    {
+      "url": "https://tarun-tej.pages.dev/",
+      "status": 200,
+      "bytes": 16135,
+      "sha256": "d31b71b2a2bfe98061e568f0256b10b5313a770d4a1aed921a5c260bfa41287c",
+      "matchesCommittedAsset": false,
+      "headers": {
+        "date": "Mon, 02 Nov 2026 16:33:49 GMT",
+        "cf-ray": "a5448b0a2af9802b-MAA",
+        "age": null,
+        "cf-cache-status": null,
+        "etag": null,
+        "content-security-policy": null
+      }
+    },
+    {
+      "url": "https://tarun-tej.pages.dev/ui-state.js",
+      "status": 404,
+      "bytes": 1171,
+      "sha256": "0a0655ab2857737ca8709fd4bb40eb32e01d0e0f7da17a92bbb1892b4db2a1ba",
+      "matchesCommittedAsset": false,
+      "headers": {
+        "date": "Mon, 02 Nov 2026 16:33:49 GMT",
+        "cf-ray": "a5448b0aab94802b-MAA",
+        "age": null,
+        "cf-cache-status": null,
+        "etag": null,
+        "content-security-policy": null
+      }
+    },
+    {
+      "url": "https://60000d63.tarun-tej.pages.dev/",
+      "status": 200,
+      "bytes": 20011,
+      "sha256": "56b921b83399b191dec7c885ab7ebfd0c4173edc48f31fe27feff883a3fadcb5",
+      "matchesCommittedAsset": true,
+      "headers": {
+        "date": "Mon, 02 Nov 2026 16:33:50 GMT",
+        "cf-ray": "a5448b1158921967-CJB",
+        "age": null,
+        "cf-cache-status": null,
+        "etag": "W/\"7575dccbb8cf2034686da3226136e51e\"",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'"
+      }
+    },
+    {
+      "url": "https://60000d63.tarun-tej.pages.dev/ui-state.js",
+      "status": 200,
+      "bytes": 678,
+      "sha256": "99b8a91f80fa1b08494eedfed46df69375f291c67159778027b269662a3ccdcb",
+      "matchesCommittedAsset": true,
+      "headers": {
+        "date": "Mon, 02 Nov 2026 16:33:50 GMT",
+        "cf-ray": "a5448b11daa41967-CJB",
+        "age": null,
+        "cf-cache-status": null,
+        "etag": "W/\"648d48305fc1717fb464b949e7d30dba\"",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'"
+      }
+    }
+  ]
+}
