@@ -1,0 +1,56 @@
+{
+  "format": "portfolio-http-burst-v1",
+  "startedAt": "2026-11-02T16:19:15.299Z",
+  "url": "https://60000d63.tarun-tej.pages.dev/",
+  "paths": [
+    "/"
+  ],
+  "method": "Bounded GET burst from one load generator; no browser rendering or user journeys.",
+  "configured": {
+    "concurrency": 20,
+    "requests": 40,
+    "durationMs": 30000,
+    "timeoutMs": 15000,
+    "maxBytes": 67108864
+  },
+  "passed": true,
+  "stopReason": "request_budget_completed",
+  "requests": {
+    "started": 40,
+    "completed": 40,
+    "successful": 40,
+    "failed": 0,
+    "cancelled": 0,
+    "errorRate": 0
+  },
+  "maximumPendingRequests": 20,
+  "dispatchWindowMs": 546.010667,
+  "elapsedMs": 681.962833,
+  "completedRequestsPerSecond": 58.654222876102104,
+  "receivedBodyBytes": 800440,
+  "latencyMs": {
+    "all": {
+      "p50": 268.72675,
+      "p95": 527.021833,
+      "p99": 528.790417,
+      "max": 528.790417
+    },
+    "successful": {
+      "p50": 268.72675,
+      "p95": 527.021833,
+      "p99": 528.790417,
+      "max": 528.790417
+    }
+  },
+  "statuses": {
+    "200": 40
+  },
+  "failures": {},
+  "networkCauses": {},
+  "cloudflareCacheStatuses": {},
+  "limits": [
+    "Pending fetches can include client connection queuing.",
+    "One machine, network path, and edge region; not 1,000 independent people or browser sessions.",
+    "Received bytes may exceed the byte limit by concurrently buffered chunks before cancellation."
+  ]
+}
