@@ -58,7 +58,8 @@ async function loadScene() {
     if (sceneDisposed) return;
     sculpture = initScene(sceneContainer, { mode, paused });
     sculpture.setMode(mode); sculpture.setPaused(paused);
-    const ready = sceneContainer.dataset.sceneReady === 'true';
+    // scene.js marks 'false' on every failure; an unset value means the renderer exists but its first paint was skipped (hidden tab).
+    const ready = sceneContainer.dataset.sceneReady !== 'false';
     sceneState(ready ? 'ready' : 'fallback', ready ? 'Interactive sculpture ready. Choose a theme or pause the motion.' : '3D is unavailable here. The lightweight artwork remains visible.');
   } catch {
     sceneContainer.dataset.sceneReady = 'false';
