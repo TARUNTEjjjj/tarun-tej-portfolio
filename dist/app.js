@@ -76,6 +76,10 @@ function scheduleScene() {
   sceneIdle = 'requestIdleCallback' in window ? window.requestIdleCallback(start, { timeout: 1800 }) : window.setTimeout(start, 200);
 }
 sceneButton?.addEventListener('click', () => { void loadScene(); });
+// scene.js marks a ready scene 'false' after a lost context or failed paint; move it to the fallback state.
+new MutationObserver(() => {
+  if (sceneContainer.dataset.sceneReady === 'false' && sceneContainer.dataset.sceneState === 'ready') sceneState('fallback', '3D is unavailable here. The lightweight artwork remains visible.');
+}).observe(sceneContainer, { attributeFilter: ['data-scene-ready'] });
 if ('IntersectionObserver' in window) {
   sceneObserver = new IntersectionObserver(entries => {
     sceneVisible = entries.some(entry => entry.isIntersecting);
