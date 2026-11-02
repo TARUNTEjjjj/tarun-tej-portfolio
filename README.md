@@ -46,7 +46,7 @@ To test an existing local Chromium installation, set `PLAYWRIGHT_CHROMIUM_EXECUT
 
 Six case studies now include Neural Math Lab and StormSignal. Project links use `?project=neural` (or another known project ID), support browser Back/Forward, and offer an explicit copy action. Neural Math Lab's source stays private.
 
-The first-load HTML/CSS/UI modules total about 71 KB before compression. Desktop 3D loads after document completion, when visible and idle. Narrow screens, reduced motion, Save-Data and 2G connections keep lightweight CSS artwork until the visitor enables 3D. No external font or image request is needed. The renderer creates each theme's geometry on demand, caps decorative animation at 30fps, limits render resolution, and stops offscreen or in hidden tabs.
+The first-load HTML/CSS/UI modules total about 72 KB before compression. Desktop 3D loads after document completion, when visible and idle. Narrow screens, reduced motion, Save-Data and 2G connections keep lightweight CSS artwork until the visitor enables 3D. No external font or image request is needed. The renderer creates each theme's geometry on demand, caps decorative animation at 30fps, limits render resolution, and stops offscreen or in hidden tabs.
 
 `npm test` runs the interaction rules and bounded load-harness tests. [Capacity methodology](docs/capacity.md) explains the difference between concurrent HTTP requests and actual concurrent visitors. Reports in `docs/verification/` record measured outcomes, including failures. Existing Pages caching is retained so unversioned files can update correctly. Response headers restrict unnecessary device permissions and page/script embedding.
 
