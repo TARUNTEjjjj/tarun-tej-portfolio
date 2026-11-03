@@ -12,7 +12,6 @@ const modeLabels = {
 function updateMotionButton() {
   const button = $('.motion-toggle');
   button.setAttribute('aria-pressed', String(paused));
-  button.setAttribute('aria-label', paused ? 'Resume animation' : 'Pause animation');
   button.firstElementChild.textContent = paused ? '▶' : 'Ⅱ';
 }
 updateMotionButton();
@@ -58,7 +57,8 @@ async function loadScene() {
     if (sceneDisposed) return;
     sculpture = initScene(sceneContainer, { mode, paused });
     sculpture.setMode(mode); sculpture.setPaused(paused);
-    const ready = sceneContainer.dataset.sceneReady === 'true';
+    // scene.js marks 'false' on every failure; an unset value means the renderer exists but its first paint was skipped (hidden tab).
+    const ready = sceneContainer.dataset.sceneReady !== 'false';
     sceneState(ready ? 'ready' : 'fallback', ready ? 'Interactive sculpture ready. Choose a theme or pause the motion.' : '3D is unavailable here. The lightweight artwork remains visible.');
   } catch {
     sceneContainer.dataset.sceneReady = 'false';
@@ -75,6 +75,10 @@ function scheduleScene() {
   sceneIdle = 'requestIdleCallback' in window ? window.requestIdleCallback(start, { timeout: 1800 }) : window.setTimeout(start, 200);
 }
 sceneButton?.addEventListener('click', () => { void loadScene(); });
+// scene.js marks a ready scene 'false' after a lost context or failed paint; move it to the fallback state.
+new MutationObserver(() => {
+  if (sceneContainer.dataset.sceneReady === 'false' && sceneContainer.dataset.sceneState === 'ready') sceneState('fallback', '3D is unavailable here. The lightweight artwork remains visible.');
+}).observe(sceneContainer, { attributeFilter: ['data-scene-ready'] });
 if ('IntersectionObserver' in window) {
   sceneObserver = new IntersectionObserver(entries => {
     sceneVisible = entries.some(entry => entry.isIntersecting);
@@ -167,13 +171,13 @@ const projects = {
     built: 'A weather situational-awareness website with satellite imagery, forecast information, official alert sources and a lightweight mode for limited connections.',
     details: ['Official local weather sources provide context for supported locations.', 'Satellite views complement forecasts with a view of changing conditions.', 'Offline preparation and reduced-data features help visitors retain useful information when a connection drops.'],
     note: 'Availability and freshness vary by location and source. Cached information can become outdated; follow current instructions from local emergency authorities.',
-    links: [['Explore StormSignal', 'https://stormsignal-weather.gardenroot512.chatgpt.site/'], ['Explore the code', 'https://github.com/TARUNTEjjjj/stormsignal']],
+    links: [['Explore StormSignal', 'https://stormsignal-weather.pages.dev/'], ['Explore the code', 'https://github.com/TARUNTEjjjj/stormsignal']],
   },
   neural: {
     label: 'PYTHON / NEURAL NETWORKS', title: 'Neural Math Lab',
     lead: 'An inspectable neural network that connects matrix operations, derivatives and actual model predictions.',
     built: 'A NumPy learning project with manual backpropagation, SGD and Adam optimizers, and self-contained reports for XOR, moons and circles experiments.',
-    details: ['Interactive reports replay saved checkpoints and trace a point through each layer.', 'Training-only preprocessing and validation selection keep held-out test examples separate.', '105 Python tests and 5 JavaScript tests check the mathematics, saved models, reports and browser prediction agreement.'],
+    details: ['Interactive reports replay saved checkpoints and trace a point through each layer.', 'Training-only preprocessing and validation selection keep held-out test examples separate.', 'Python and JavaScript regression tests check the mathematics, saved models, reports and browser prediction agreement.'],
     note: 'A private learning project. Recorded results describe particular synthetic datasets and seeds; they are not a guarantee of real-world accuracy. The source remains private.',
     links: [['Ask about the project', 'mailto:avulataruntej123@gmail.com?subject=Neural%20Math%20Lab']],
   },
@@ -189,7 +193,7 @@ function showProject(key, trigger) {
   dialogTrigger = trigger || document.querySelector(`.project-visual[data-project="${key}"]`);
   currentProject = key;
   // Authored local content only. The URL selects an allowlisted project, never HTML.
-  $('#dialog-content').innerHTML = `<p class="dialog-eyebrow">${project.label}</p><h2 id="dialog-title">${project.title}</h2><p class="dialog-lead">${project.lead}</p><div class="dialog-section"><h3>What I built</h3><p>${project.built}</p></div><div class="dialog-section"><h3>Inside the project</h3><ul>${project.details.map(detail => `<li>${detail}</li>`).join('')}</ul></div><div class="dialog-section"><p>${project.note}</p></div><div class="dialog-links">${project.links.map(([label, url]) => `<a class="text-link" href="${url}" target="_blank" rel="noopener noreferrer">${label}<span aria-hidden="true">↗</span></a>`).join('')}</div><button class="copy-project-link" type="button">Copy project link</button><p class="project-link-status sr-only" aria-live="polite"></p>`;
+  $('#dialog-content').innerHTML = `<p class="dialog-eyebrow">${project.label}</p><h2 id="dialog-title">${project.title}</h2><p class="dialog-lead">${project.lead}</p><div class="dialog-section"><h3>What I built</h3><p>${project.built}</p></div><div class="dialog-section"><h3>Inside the project</h3><ul>${project.details.map(detail => `<li>${detail}</li>`).join('')}</ul></div><div class="dialog-section"><p>${project.note}</p></div><div class="dialog-links">${project.links.map(([label, url]) => `<a class="text-link" href="${url}" target="_blank" rel="noopener noreferrer">${label}<span aria-hidden="true">↗</span></a>`).join('')}</div><button class="copy-project-link" type="button">Copy project link</button><p class="project-link-status" aria-live="polite"></p>`;
   if (!dialog.open) {
     previousBodyOverflow = document.body.style.overflow;
     dialog.showModal();
@@ -226,9 +230,16 @@ document.querySelectorAll('[data-project]').forEach(button => button.addEventLis
 }));
 $('.dialog-close').addEventListener('click', closeProject);
 dialog.addEventListener('cancel', event => { event.preventDefault(); closeProject(); });
-dialog.addEventListener('click', event => {
+const outsideDialog = event => {
   const bounds = dialog.getBoundingClientRect();
-  if (event.target === dialog && (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom)) closeProject();
+  return event.target === dialog && (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom);
+};
+// Close only for a single click that started and ended on the backdrop, not a double-click or a drag out of the dialog.
+let backdropPress = false;
+dialog.addEventListener('pointerdown', event => { backdropPress = outsideDialog(event); });
+dialog.addEventListener('click', event => {
+  if (backdropPress && event.detail <= 1 && outsideDialog(event)) closeProject();
+  backdropPress = false;
 });
 dialog.addEventListener('close', () => {
   document.body.style.overflow = previousBodyOverflow;

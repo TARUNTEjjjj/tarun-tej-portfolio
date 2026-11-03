@@ -38,10 +38,12 @@ Raw reports are `docs/verification/deployment-*.json`. The test used one local m
 An earlier 20-request-concurrency check hit the previous production version while the canonical domain still served the original assets; that report is explicitly named `previous-version-live-20.json` and is not evidence for the new release.
 
 
-## Main-domain issue still open
+## Main-domain issue (resolved)
 
 As of 2 November 2026 at 16:33 UTC, `https://tarun-tej.pages.dev/` still served the original 16,135-byte HTML and returned HTTP 404 for `/ui-state.js`. The tested upgraded deployment served 20,011-byte HTML and the UI module with HTTP 200, matching committed bytes and including CSP headers.
 
 A second successful Production/main publish (`f70359ab-e21d-4add-a325-ea51fb1a9ad5`, identical website assets) did not resolve this. Cloudflare's supported rollback control then successfully selected the earlier **upgraded** deployment `60000d63-aab9-4a6e-9170-9a3d512ae5cd` as active production; the dashboard confirmed that selection. Fresh HTTP requests and the review browser still received the original site at the main address afterward. Current Date and differing CF-Ray values were recorded, so this is not explained by browser cache alone. The exact provider routing/cache cause remains unconfirmed.
 
-Use the verified release at **https://60000d63.tarun-tej.pages.dev/** while the main-domain issue remains unresolved. `docs/verification/production-domain-check.json` preserves both response comparisons and Cloudflare request identifiers for follow-up. Do not claim the canonical domain is updated until its assets match the release. No additional deployments or broad account changes are needed without new evidence.
+While the main-domain issue was unresolved, the verified release was available at **https://60000d63.tarun-tej.pages.dev/**. `docs/verification/production-domain-check.json` preserves both response comparisons and Cloudflare request identifiers.
+
+Rechecked on 2 November 2026 at 20:06 and 20:47 UTC: `https://tarun-tej.pages.dev/` returned HTTP 200 for `/`, `/app.js`, `/scene.js`, `/ui-state.js`, `/styles.css` and the résumé PDF, and every SHA-256 matched `dist/` at website commit `f998cbb57c086a7e70c57d7486ec9dbfb537ce0c`. The root served the 20,011-byte HTML with ETag `"7575dccbb8cf2034686da3226136e51e"`, the tag recorded for deployment `60000d63`, and the CSP, Permissions-Policy and X-Frame-Options headers were present.
