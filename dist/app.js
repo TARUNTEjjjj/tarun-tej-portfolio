@@ -177,7 +177,7 @@ const projects = {
     label: 'PYTHON / NEURAL NETWORKS', title: 'Neural Math Lab',
     lead: 'An inspectable neural network that connects matrix operations, derivatives and actual model predictions.',
     built: 'A NumPy learning project with manual backpropagation, SGD and Adam optimizers, and self-contained reports for XOR, moons and circles experiments.',
-    details: ['Interactive reports replay saved checkpoints and trace a point through each layer.', 'Training-only preprocessing and validation selection keep held-out test examples separate.', '105 Python tests and 5 JavaScript tests check the mathematics, saved models, reports and browser prediction agreement.'],
+    details: ['Interactive reports replay saved checkpoints and trace a point through each layer.', 'Training-only preprocessing and validation selection keep held-out test examples separate.', 'Python and JavaScript regression tests check the mathematics, saved models, reports and browser prediction agreement.'],
     note: 'A private learning project. Recorded results describe particular synthetic datasets and seeds; they are not a guarantee of real-world accuracy. The source remains private.',
     links: [['Ask about the project', 'mailto:avulataruntej123@gmail.com?subject=Neural%20Math%20Lab']],
   },
