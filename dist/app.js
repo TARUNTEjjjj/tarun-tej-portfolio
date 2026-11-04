@@ -139,7 +139,7 @@ const projects = {
     built: 'An interactive browser application using HTML, CSS and JavaScript. It combines reproducible question generation, timed practice, worked review and progress saved on the learner’s device.',
     details: ['Seeded mathematical templates make generated questions reproducible.', 'Worked review connects an answer to its reasoning.', 'Local progress and recoverable data keep the experience independent of an account.'],
     note: 'An independent SAT-style practice project. The questions are generated from mathematical templates; this is not an official College Board product.',
-    links: [['Try the website', 'https://axiom-sat.pages.dev/'], ['Explore the code', 'https://github.com/TARUNTEjjjj/axiom-sat'], ['Engineering notes', 'https://github.com/TARUNTEjjjj/axiom-sat/blob/main/docs/engineering.md']],
+    links: [['Try the website', 'https://axiom-sat.pages.dev/']],
   },
   forge: {
     label: 'INTERACTIVE WEB / 3D LEARNING', title: 'Forge',
@@ -147,7 +147,7 @@ const projects = {
     built: 'Built with React, TypeScript and Vite, Forge brings together guided Python, Git, algorithms and software engineering lessons with browser-based coding practice.',
     details: ['A 3D learning map provides a visual route through the material.', 'Guided exercises connect explanations to hands-on practice.', 'The interface is built around exploring a topic and returning to the next step.'],
     note: 'The artwork in this portfolio is an original visual interpretation of the project. Follow the website link to explore the actual learning experience.',
-    links: [['Explore Forge', 'https://forge-learning-academy.pages.dev/'], ['Explore the code', 'https://github.com/TARUNTEjjjj/forge-learning-academy']],
+    links: [['Explore Forge', 'https://forge-learning-academy.pages.dev/']],
   },
   math: {
     label: 'C++20 / EXACT ARITHMETIC', title: 'AxiomMath',
@@ -155,7 +155,7 @@ const projects = {
     built: 'A C++20 rational-arithmetic and expression-parsing project, with a canonical fraction representation, bounded integer arithmetic and explicit overflow handling.',
     details: ['Engineering notes explain the arithmetic bounds and expression grammar.', 'Differential checks compare results with Python’s fractions.Fraction.', 'Property and boundary tests explore the behaviour of the implementation.'],
     note: 'Finite tests provide evidence about correctness, not a proof for every possible input. The supported arithmetic range and limitations are documented.',
-    links: [['Explore the code', 'https://github.com/TARUNTEjjjj/axiom-math'], ['Arithmetic reasoning', 'https://github.com/TARUNTEjjjj/axiom-math/blob/main/docs/engineering.md'], ['Verification', 'https://github.com/TARUNTEjjjj/axiom-math/blob/main/docs/verification.md']],
+    links: [],
   },
   pocket: {
     label: 'C++20 / PERSISTENT STORAGE', title: 'PocketKV',
@@ -163,7 +163,7 @@ const projects = {
     built: 'A C++20 persistent store using an append-only log, an in-memory index, checksums and file locking. Its documentation covers the storage format, recovery behaviour and verification.',
     details: ['A reproducible benchmark varies overwrite history while holding live-key count fixed.', 'Raw measurements, timing boundaries and validation checks accompany the report.', 'Small local workloads show why reopening a longer log can cost more while indexed reads remain comparatively stable.'],
     note: 'The benchmark describes small, warm-cache local workloads. It is not a general performance guarantee or a certification of power-loss durability.',
-    links: [['Explore the code', 'https://github.com/TARUNTEjjjj/pocketkv'], ['Read the benchmark', 'https://github.com/TARUNTEjjjj/pocketkv/blob/main/docs/benchmarks.md'], ['Storage design', 'https://github.com/TARUNTEjjjj/pocketkv/blob/main/docs/engineering.md']],
+    links: [],
   },
   storm: {
     label: 'WEB DEVELOPMENT / WEATHER AWARENESS', title: 'StormSignal',
@@ -171,7 +171,7 @@ const projects = {
     built: 'A weather situational-awareness website with satellite imagery, forecast information, official alert sources and a lightweight mode for limited connections.',
     details: ['Official local weather sources provide context for supported locations.', 'Satellite views complement forecasts with a view of changing conditions.', 'Offline preparation and reduced-data features help visitors retain useful information when a connection drops.'],
     note: 'Availability and freshness vary by location and source. Cached information can become outdated; follow current instructions from local emergency authorities.',
-    links: [['Explore StormSignal', 'https://stormsignal-weather.pages.dev/'], ['Explore the code', 'https://github.com/TARUNTEjjjj/stormsignal']],
+    links: [['Explore StormSignal', 'https://stormsignal-weather.pages.dev/']],
   },
   neural: {
     label: 'PYTHON / NEURAL NETWORKS', title: 'Neural Math Lab',
@@ -193,7 +193,7 @@ function showProject(key, trigger) {
   dialogTrigger = trigger || document.querySelector(`.project-visual[data-project="${key}"]`);
   currentProject = key;
   // Authored local content only. The URL selects an allowlisted project, never HTML.
-  $('#dialog-content').innerHTML = `<p class="dialog-eyebrow">${project.label}</p><h2 id="dialog-title">${project.title}</h2><p class="dialog-lead">${project.lead}</p><div class="dialog-section"><h3>What I built</h3><p>${project.built}</p></div><div class="dialog-section"><h3>Inside the project</h3><ul>${project.details.map(detail => `<li>${detail}</li>`).join('')}</ul></div><div class="dialog-section"><p>${project.note}</p></div><div class="dialog-links">${project.links.map(([label, url]) => `<a class="text-link" href="${url}" target="_blank" rel="noopener noreferrer">${label}<span aria-hidden="true">↗</span></a>`).join('')}</div><button class="copy-project-link" type="button">Copy project link</button><p class="project-link-status" aria-live="polite"></p>`;
+  $('#dialog-content').innerHTML = `<p class="dialog-eyebrow">${project.label}</p><h2 id="dialog-title">${project.title}</h2><p class="dialog-lead">${project.lead}</p><div class="dialog-section"><h3>What I built</h3><p>${project.built}</p></div><div class="dialog-section"><h3>Inside the project</h3><ul>${project.details.map(detail => `<li>${detail}</li>`).join('')}</ul></div><div class="dialog-section"><p>${project.note}</p></div>${project.links.length ? `<div class="dialog-links">${project.links.map(([label, url]) => `<a class="text-link" href="${url}" target="_blank" rel="noopener noreferrer">${label}<span aria-hidden="true">↗</span></a>`).join('')}</div>` : ''}<button class="copy-project-link" type="button">Copy project link</button><p class="project-link-status" aria-live="polite"></p>`;
   if (!dialog.open) {
     previousBodyOverflow = document.body.style.overflow;
     dialog.showModal();
