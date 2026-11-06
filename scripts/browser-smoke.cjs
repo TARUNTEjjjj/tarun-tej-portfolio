@@ -30,11 +30,13 @@ const checks = [];
       assert.equal(await page.locator('.project:visible').count(), count);
     }
     checks.push('Project filters expose the correct project sets');
-    for (const project of ['axiom', 'forge', 'math', 'pocket', 'storm', 'neural']) {
+    // AxiomMath and PocketKV are private-source projects with no public destination.
+    for (const [project, links] of [['axiom', 1], ['forge', 1], ['math', 0], ['pocket', 0], ['storm', 1], ['neural', 1]]) {
       const trigger = page.locator(`.project-visual[data-project="${project}"]`);
       await trigger.click();
       assert.equal(await page.locator('dialog').evaluate(element => element.open), true);
-      assert(await page.locator('.dialog-links a').count() >= 1);
+      assert.equal(await page.locator('#dialog-title').count(), 1);
+      assert.equal(await page.locator('.dialog-links a').count(), links, `${project} dialog links`);
       await page.keyboard.press('Escape');
       assert.equal(await page.locator('dialog').evaluate(element => element.open), false);
       assert.equal(await trigger.evaluate(element => element === document.activeElement), true);
