@@ -30,16 +30,26 @@ const checks = [];
       assert.equal(await page.locator('.project:visible').count(), count);
     }
     checks.push('Project filters expose the correct project sets');
-    for (const project of ['axiom', 'forge', 'math', 'pocket', 'storm', 'neural']) {
+    const projectLinks = {
+      axiom: ['https://axiom-sat.pages.dev/'],
+      forge: ['https://forge-learning-academy.pages.dev/'],
+      math: [],
+      pocket: [],
+      storm: ['https://stormsignal-weather.pages.dev/'],
+      neural: ['https://neural-math-lab.pages.dev/'],
+    };
+    for (const [project, expectedLinks] of Object.entries(projectLinks)) {
       const trigger = page.locator(`.project-visual[data-project="${project}"]`);
       await trigger.click();
       assert.equal(await page.locator('dialog').evaluate(element => element.open), true);
-      assert(await page.locator('.dialog-links a').count() >= 1);
+      const links = await page.locator('.dialog-links a').evaluateAll(elements => elements.map(element => element.href));
+      assert.deepEqual(links, expectedLinks, `${project} exposes only its available live website`);
+      assert.equal(await page.locator('a[href*="github.com"]').count(), 0, 'Private repository links remain absent');
       await page.keyboard.press('Escape');
       assert.equal(await page.locator('dialog').evaluate(element => element.open), false);
       assert.equal(await trigger.evaluate(element => element === document.activeElement), true);
     }
-    checks.push('All case studies open, Escape closes, and focus returns');
+    checks.push('All case studies expose only their available live websites; Escape closes and focus returns');
     await page.locator('.copy-email').click();
     assert.equal(await page.evaluate(() => navigator.clipboard.readText()), 'avulataruntej123@gmail.com');
     const pdf = await context.request.get(`${baseURL}/assets/Avula-Tarun-Tej-Coding-Resume.pdf`);
