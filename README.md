@@ -44,7 +44,7 @@ To test an existing local Chromium installation, set `PLAYWRIGHT_CHROMIUM_EXECUT
 
 ## Upgrade 1.1
 
-Six case studies now include Neural Math Lab and StormSignal. Project links use `?project=neural` (or another known project ID), support browser Back/Forward, and offer an explicit copy action. Neural Math Lab's source stays private.
+Six case studies now include Neural Math Lab and StormSignal. Project links use `?project=neural` (or another known project ID), support browser Back/Forward, and offer an explicit copy action. Neural Math Lab opens its live interactive site; its source stays private.
 
 The first-load HTML/CSS/UI modules total about 72 KB before compression. Desktop 3D loads after document completion, when visible and idle. Narrow screens, reduced motion, Save-Data and 2G connections keep lightweight CSS artwork until the visitor enables 3D. No external font or image request is needed. The renderer creates each theme's geometry on demand, caps decorative animation at 30fps, limits render resolution, and stops offscreen or in hidden tabs.
 
