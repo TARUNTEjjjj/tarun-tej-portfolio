@@ -77,3 +77,11 @@ Commit and push source changes to the private GitHub repository before deploying
 ## Third-party software
 
 Three.js 0.187.0 is vendored from its npm release. See `dist/vendor/THREE-LICENSE.txt` for its MIT licence. Playwright is used only for development checks. No Apple or Prince Keshri code, logos, product images or video assets are included.
+
+
+### Search the project collection
+
+Visitors can search project cards by several words and combine the query with a
+category filter. Search is case- and accent-insensitive, runs entirely in the
+browser, and announces result counts. Clear filters restores every project and
+returns keyboard focus to the search field. No query is sent to a server.

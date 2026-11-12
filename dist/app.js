@@ -1,4 +1,4 @@
-import { sceneRequiresConsent, projectKeyFromURL, projectURL } from './ui-state.js';
+import { sceneRequiresConsent, projectKeyFromURL, projectURL, matchesProject } from './ui-state.js';
 const $ = selector => document.querySelector(selector);
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 let paused = reducedMotion.matches;
@@ -248,17 +248,31 @@ dialog.addEventListener('close', () => {
 window.addEventListener('popstate', syncProjectURL);
 syncProjectURL();
 
-document.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => {
-  const filter = button.dataset.filter;
-  let visible = 0;
-  document.querySelectorAll('.project').forEach(project => {
-    const show = filter === 'all' || project.dataset.category.split(' ').includes(filter);
-    project.hidden = !show;
-    if (show) { visible++; project.classList.add('visible'); }
-  });
-  document.querySelectorAll('[data-filter]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
-  $('#filter-status').textContent = `${visible} ${visible === 1 ? 'project' : 'projects'} shown.`;
+let activeFilter = 'all';
+const searchInput = $('#project-search');
+const clearSearch = $('#clear-project-search');
+const projectCards = [...document.querySelectorAll('.project')].map(element => ({
+  element, text: element.textContent, categories: element.dataset.category,
 }));
+function filterProjects() {
+  let visible = 0;
+  for (const card of projectCards) {
+    const show = matchesProject(card, { query: searchInput.value, category: activeFilter });
+    card.element.hidden = !show;
+    if (show) { visible++; card.element.classList.add('visible'); }
+  }
+  document.querySelectorAll('[data-filter]').forEach(item => item.setAttribute('aria-pressed', String(item.dataset.filter === activeFilter)));
+  clearSearch.hidden = activeFilter === 'all' && !searchInput.value;
+  $('#filter-status').textContent = visible ? `${visible} ${visible === 1 ? 'project' : 'projects'} shown.` : 'No projects match. Try another term or clear the filters.';
+}
+document.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => {
+  activeFilter = button.dataset.filter;
+  filterProjects();
+}));
+searchInput.addEventListener('input', filterProjects);
+clearSearch.addEventListener('click', () => {
+  activeFilter = 'all'; searchInput.value = ''; filterProjects(); searchInput.focus();
+});
 if ('IntersectionObserver' in window && !reducedMotion.matches) {
   document.documentElement.classList.add('js-reveal');
   const observer = new IntersectionObserver(entries => entries.forEach(entry => {
