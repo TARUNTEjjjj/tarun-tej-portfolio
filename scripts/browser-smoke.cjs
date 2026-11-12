@@ -30,6 +30,16 @@ const checks = [];
       assert.equal(await page.locator('.project:visible').count(), count);
     }
     checks.push('Project filters expose the correct project sets');
+    await page.locator('#project-search').fill('neural');
+    assert.equal(await page.locator('.project:visible').count(), 1);
+    await page.locator('[data-filter="systems"]').click();
+    assert.equal(await page.locator('.project:visible').count(), 0);
+    assert.match(await page.locator('#filter-status').textContent(), /No projects match/);
+    await page.locator('#clear-project-search').click();
+    assert.equal(await page.locator('.project:visible').count(), 6);
+    assert.equal(await page.locator('#project-search').inputValue(), '');
+    checks.push('Search composes with categories; empty results recover through clear filters');
+
     const projectLinks = {
       axiom: ['https://axiom-sat.pages.dev/'],
       forge: ['https://forge-learning-academy.pages.dev/'],

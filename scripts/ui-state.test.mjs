@@ -21,3 +21,14 @@ test('shared project URLs safely encode values inside the query', () => {
   assert.equal(projectURL('https://example.test/', 'a&b'), '/?project=a%26b');
   assert.equal(projectURL('https://example.test/?project=storm#contact', 'neural'), '/?project=neural#contact');
 });
+
+
+test('project search composes category with literal, accent-insensitive terms', async () => {
+  const { matchesProject } = await import('../dist/ui-state.js');
+  const project = {text:'Neural résumé — Python and matrix operations',categories:'math ml'};
+  assert.equal(matchesProject(project,{query:' PYTHON resume ',category:'ml'}),true);
+  assert.equal(matchesProject(project,{query:'python absent'}),false);
+  assert.equal(matchesProject(project,{query:'python',category:'web'}),false);
+  assert.equal(matchesProject(project,{query:'  '}),true);
+  for(const query of ['<script>','.*','[','__proto__']) assert.equal(matchesProject(project,{query}),false);
+});
