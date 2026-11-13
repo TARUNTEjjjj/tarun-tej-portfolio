@@ -1,6 +1,6 @@
 # Tarun Tej — Personal Portfolio
 
-A personal website for web development, software and AI evaluation opportunities, with an original interactive 3D sculpture, six project case studies, links to 13 public repositories, experience, a résumé and contact links.
+A personal website for web development, software and AI evaluation opportunities, with an original interactive 3D sculpture, six project case studies, links to 13 public repositories, education, résumés and contact links.
 
 **[Visit the portfolio](https://tarun-tej.pages.dev/)**
 
@@ -15,7 +15,7 @@ The site is buildless. `dist/` contains the editable HTML, CSS, JavaScript, loca
 
 ## Edit
 
-- `dist/index.html`: page structure, biography, experience, project summaries and contact links.
+- `dist/index.html`: page structure, biography, education, project summaries and contact links.
 - `dist/styles.css`: responsive layout, typography, palette and CSS project illustrations.
 - `dist/app.js`: project case-study content, filters, dialog behaviour, navigation and clipboard action.
 - `dist/scene.js`: procedural Three.js geometry, lighting, interaction and motion preferences.
@@ -47,7 +47,7 @@ To test an existing local Chromium installation, set `PLAYWRIGHT_CHROMIUM_EXECUT
 
 Six case studies include Neural Math Lab and StormSignal. Each offers a public source link, while a compact collection introduces Attention Atlas, Vedaris, the three Avenquellis repositories, Forge for Mac and this portfolio. Project links use `?project=neural` (or another known project ID), support browser Back/Forward, and offer an explicit copy action.
 
-The November 2026 refresh balances web development, Python, AI/ML learning and AI response/code evaluation. It records **222 total logged Outlier hours** separately from code-evaluation activities. The date range for Outlier and Mercor remains combined; the site does not infer separate start dates or assign all hours to code tasks. StormSignal's case study records its 308-test release and the observed PAGASA availability limitation without claiming all upstream providers are healthy.
+The portfolio balances web development, Python, AI/ML learning and AI response/code evaluation skills. Its learning timeline presents education and summer-school participation. StormSignal's case study records its 308-test release and the observed PAGASA availability limitation without claiming all upstream providers are healthy.
 
 The first-load HTML/CSS/UI modules total about 80 KB before compression, below the enforced 100 KB budget. Desktop 3D loads after document completion, when visible and idle. Narrow screens, reduced motion, Save-Data and 2G connections keep lightweight CSS artwork until the visitor enables 3D. No external font or image request is needed. The renderer creates each theme's geometry on demand, caps decorative animation at 30fps, limits render resolution, and stops offscreen or in hidden tabs.
 
