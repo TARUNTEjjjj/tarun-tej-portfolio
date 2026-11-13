@@ -71,3 +71,26 @@ dialog{border:0;border-radius:20px;max-width:720px;width:calc(100% - 32px);paddi
 .project-search input{font:inherit;color:inherit;background:transparent;border:1px solid #595c66;border-radius:8px;padding:10px 14px;min-width:0;max-width:100%;width:320px}
 .project-search input:focus-visible,.project-search button:focus-visible{outline:2px solid #8be9e4;outline-offset:3px}
 .project-search button{font:inherit;color:inherit;background:transparent;border:1px solid #595c66;border-radius:8px;padding:10px 14px;cursor:pointer}
+
+/* Public project collection and dated experience evidence. */
+.project-meta>div>p:not(.project-type){font-size:13px;line-height:1.7;color:#697173;max-width:400px}
+.project-source{display:inline-flex;align-items:center;gap:12px;min-height:44px;margin-top:8px;font-size:12px;color:#286862;text-decoration:underline;text-underline-offset:4px}
+.repository-collection{margin-top:62px;padding-top:36px;border-top:1px solid var(--line)}
+.repository-heading{display:flex;justify-content:space-between;align-items:end;gap:40px}
+.repository-heading h3{font-size:27px;font-weight:500;letter-spacing:-1px;margin-top:12px}
+.repository-heading>p{max-width:340px;font-size:13px;line-height:1.7;color:var(--muted)}
+.repository-list{list-style:none;padding:0;margin:26px 0 21px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:35px}
+.repository-list li{border-top:1px solid var(--line);min-width:0}
+.repository-list a{display:block;padding:19px 0;min-height:98px}
+.repository-list a>span{display:flex;justify-content:space-between;gap:16px;font-size:15px;font-weight:550;line-height:1.5}
+.repository-list i{font-style:normal;color:#427c72}
+.repository-list small{display:block;font-size:12px;line-height:1.6;color:var(--muted);margin-top:6px;max-width:46ch}
+.repository-list a:hover>span{color:#286862}
+.timeline-item>div>p:not(.project-type){font-size:12px;line-height:1.8;color:#65716b}
+.timeline-item .experience-evidence{margin-top:15px;padding:13px 15px;border-left:2px solid #9d8ac7;background:#eae6f033}
+.experience-evidence strong,.experience-evidence span{display:block}
+.experience-evidence strong{font-size:13px;color:#4f4268}
+.experience-evidence span{font-size:11px;margin-top:4px}
+.resume-links{display:flex;gap:16px 25px;flex-wrap:wrap;margin-top:24px}.about-copy .resume-links .text-link{margin-top:0}
+@media(max-width:760px){.repository-heading{display:block}.repository-heading>p{margin-top:17px;max-width:480px}.repository-list{column-gap:24px}.repository-heading h3{font-size:25px}.project-meta>div>p:not(.project-type){font-size:12px}.site-footer>div{flex-wrap:wrap}}
+@media(max-width:480px){.repository-list{grid-template-columns:1fr}.repository-list a{min-height:88px}.repository-collection{margin-top:42px;padding-top:29px}.repository-heading h3{font-size:24px}.contact-top .eyebrow{max-width:32ch}}
