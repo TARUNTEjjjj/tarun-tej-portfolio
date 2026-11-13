@@ -139,7 +139,7 @@ const projects = {
     built: 'An interactive browser application using HTML, CSS and JavaScript. It combines reproducible question generation, timed practice, worked review and progress saved on the learner’s device.',
     details: ['Seeded mathematical templates make generated questions reproducible.', 'Worked review connects an answer to its reasoning.', 'Local progress and recoverable data keep the experience independent of an account.'],
     note: 'An independent SAT-style practice project. The questions are generated from mathematical templates; this is not an official College Board product.',
-    links: [['Try the website', 'https://axiom-sat.pages.dev/']],
+    links: [['Try the website', 'https://axiom-sat.pages.dev/'], ['View source', 'https://github.com/TARUNTEjjjj/axiom-sat']],
   },
   forge: {
     label: 'INTERACTIVE WEB / 3D LEARNING', title: 'Forge',
@@ -147,7 +147,7 @@ const projects = {
     built: 'Built with React, TypeScript and Vite, Forge brings together guided Python, Git, algorithms and software engineering lessons with browser-based coding practice.',
     details: ['A 3D learning map provides a visual route through the material.', 'Guided exercises connect explanations to hands-on practice.', 'The interface is built around exploring a topic and returning to the next step.'],
     note: 'The artwork in this portfolio is an original visual interpretation of the project. Follow the website link to explore the actual learning experience.',
-    links: [['Explore Forge', 'https://forge-learning-academy.pages.dev/']],
+    links: [['Explore Forge', 'https://forge-learning-academy.pages.dev/'], ['View source', 'https://github.com/TARUNTEjjjj/forge-learning-academy']],
   },
   math: {
     label: 'C++20 / EXACT ARITHMETIC', title: 'AxiomMath',
@@ -155,7 +155,7 @@ const projects = {
     built: 'A C++20 rational-arithmetic and expression-parsing project, with a canonical fraction representation, bounded integer arithmetic and explicit overflow handling.',
     details: ['Engineering notes explain the arithmetic bounds and expression grammar.', 'Differential checks compare results with Python’s fractions.Fraction.', 'Property and boundary tests explore the behaviour of the implementation.'],
     note: 'Finite tests provide evidence about correctness, not a proof for every possible input. The supported arithmetic range and limitations are documented.',
-    links: [],
+    links: [['View source', 'https://github.com/TARUNTEjjjj/axiom-math']],
   },
   pocket: {
     label: 'C++20 / PERSISTENT STORAGE', title: 'PocketKV',
@@ -163,23 +163,23 @@ const projects = {
     built: 'A C++20 persistent store using an append-only log, an in-memory index, checksums and file locking. Its documentation covers the storage format, recovery behaviour and verification.',
     details: ['A reproducible benchmark varies overwrite history while holding live-key count fixed.', 'Raw measurements, timing boundaries and validation checks accompany the report.', 'Small local workloads show why reopening a longer log can cost more while indexed reads remain comparatively stable.'],
     note: 'The benchmark describes small, warm-cache local workloads. It is not a general performance guarantee or a certification of power-loss durability.',
-    links: [],
+    links: [['View source', 'https://github.com/TARUNTEjjjj/pocketkv']],
   },
   storm: {
     label: 'WEB DEVELOPMENT / WEATHER AWARENESS', title: 'StormSignal',
     lead: 'Weather information designed to stay useful when connectivity becomes unreliable.',
-    built: 'A weather situational-awareness website with satellite imagery, forecast information, official alert sources and a lightweight mode for limited connections.',
-    details: ['Official local weather sources provide context for supported locations.', 'Satellite views complement forecasts with a view of changing conditions.', 'Offline preparation and reduced-data features help visitors retain useful information when a connection drops.'],
-    note: 'Availability and freshness vary by location and source. Cached information can become outdated; follow current instructions from local emergency authorities.',
-    links: [['Explore StormSignal', 'https://stormsignal-weather.pages.dev/']],
+    built: 'A React and TypeScript weather workspace with forecasts, satellite imagery, official-source checks, saved places and offline briefings.',
+    details: ['Bounded provider timeouts and retries keep slow upstream services from leaving requests hanging.', 'Source status and partial results remain visible when an official provider is unavailable.', '308 automated tests passed in the November 2026 release, alongside live checks for supported locations.'],
+    note: 'Availability and freshness vary by source. The November 2026 live check found PAGASA unavailable; Manila retained partial WMO coverage. Cached information can become outdated. Follow current instructions from local emergency authorities.',
+    links: [['Explore StormSignal', 'https://stormsignal-weather.pages.dev/'], ['View source', 'https://github.com/TARUNTEjjjj/stormsignal']],
   },
   neural: {
     label: 'PYTHON / NEURAL NETWORKS', title: 'Neural Math Lab',
     lead: 'An inspectable neural network that connects matrix operations, derivatives and actual model predictions.',
     built: 'A NumPy learning project with manual backpropagation, SGD and Adam optimizers, and self-contained reports for XOR, moons and circles experiments.',
     details: ['Interactive reports replay saved checkpoints and trace a point through each layer.', 'Training-only preprocessing and validation selection keep held-out test examples separate.', 'Python and JavaScript regression tests check the mathematics, saved models, reports and browser prediction agreement.'],
-    note: 'A private learning project. Recorded results describe particular synthetic datasets and seeds; they are not a guarantee of real-world accuracy. The source remains private.',
-    links: [['Explore Neural Math Lab', 'https://neural-math-lab.pages.dev/']],
+    note: 'An open-source learning project. Recorded results describe particular synthetic datasets and seeds; they are not a guarantee of real-world accuracy.',
+    links: [['Explore Neural Math Lab', 'https://neural-math-lab.pages.dev/'], ['View source', 'https://github.com/TARUNTEjjjj/neural-math-lab']],
   },
 
 };
