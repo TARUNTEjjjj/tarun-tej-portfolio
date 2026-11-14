@@ -7,7 +7,7 @@ const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
 assert.equal(new Set(ids).size, ids.length, 'HTML IDs must be unique.');
 for (const [, value] of html.matchAll(/\b(?:src|href)="([^"]+)"/g)) {
   if (value.startsWith('#')) assert(ids.includes(value.slice(1)), `Missing anchor ${value}`);
-  else if (!/^(https?:|mailto:|data:)/.test(value)) assert(existsSync(resolve(root, value)), `Missing local asset ${value}`);
+  else if (!/^(https?:|mailto:|data:)/.test(value)) assert(existsSync(resolve(root, value.replace(/^\//, ''))), `Missing local asset ${value}`);
 }
 for (const path of ['app.js', 'scene.js', 'ui-state.js', 'vendor/three.module.js', 'vendor/three.core.js']) {
   const source = readFileSync(resolve(root, path), 'utf8');
