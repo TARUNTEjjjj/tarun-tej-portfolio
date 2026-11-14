@@ -16,6 +16,8 @@ for (const path of ['app.js', 'scene.js', 'ui-state.js', 'vendor/three.module.js
   }
 }
 assert(readFileSync(resolve(root, 'assets/Avula-Tarun-Tej-Coding-Resume.pdf')).subarray(0, 5).equals(Buffer.from('%PDF-')), 'Résumé must be a PDF.');
+assert.deepEqual(readFileSync(resolve(root, 'offline-resources-worker.js')), readFileSync(resolve(root, '..', 'offline-resources-worker.js')), 'The installed-app offline navigation worker must match its source.');
+assert.match(readFileSync(resolve(root, '_headers'), 'utf8'), /\/offline-resources-worker\.js\n  Cache-Control: no-cache/);
 console.log('Local assets, module imports, section anchors and résumé PDF verified.');
 
 const files = ['index.html', 'styles.css', 'app.js', 'ui-state.js'];
