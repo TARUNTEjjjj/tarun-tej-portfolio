@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "project": "tarun-tej-portfolio",
+  "version": "e55bd566a95788f279d96e68e89557b12835de7c3cd7437fd8933bdfb3eb2229",
+  "workers": [
+    {
+      "scope": "/",
+      "script": "/offline-resources-worker.js",
+      "version": "e55bd566a95788f279d96e68e89557b12835de7c3cd7437fd8933bdfb3eb2229"
+    },
+    {
+      "scope": "/resources/",
+      "script": "/resources/offline-worker.js",
+      "version": "e55bd566a95788f279d96e68e89557b12835de7c3cd7437fd8933bdfb3eb2229"
+    }
+  ]
+}
