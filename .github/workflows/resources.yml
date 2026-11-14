@@ -48,11 +48,13 @@ jobs:
             exit "$status"
           fi
       - run: node scripts/resources/check-catalog.mjs
+      - name: Synchronize bundled public resources
+        run: npm run build
       - name: Commit the catalog snapshot
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add resources/catalog.json
+          git add resources/catalog.json dist/resources/catalog.json
           if git diff --cached --quiet; then exit 0; fi
           git commit -m 'Refresh public resource catalog'
           git push
