@@ -96,3 +96,9 @@ Explore the project-specific [resource catalog](resources/README.md): curated re
 The web resource library now checks for fresh public metadata every 15 minutes while an app tab is open and saves the latest validated collection for offline visits. It shows successful-check and source-observation dates separately, preserves good data during failures, and keeps its offline storage separate from application progress. See [resource update and offline behavior](resources/README.md#automatic-checks-and-offline-collections-in-the-web-app).
 
 After an online visit prepares the saved library, reopening the installed app without a connection opens that resource library. The main site remains available online; this fallback does not download the complete application or third-party repositories.
+
+## Installed app updates
+
+Installed apps check for a new deployed application release every 15 minutes while open and online. A new release is prepared before it is activated. Updates wait while an app window has active work or unsaved input; reopening the app also loads the latest available release.
+
+The resource collection is stored separately from application code. Updating code keeps the latest saved collection and the verified offline resource page. When the main page cannot load offline, the installed app opens that saved library. External repository pages and downloads still need internet access.
