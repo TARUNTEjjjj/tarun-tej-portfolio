@@ -3,7 +3,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { extname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.svg': 'image/svg+xml', '.pdf': 'application/pdf', '.xml': 'application/xml', '.txt': 'text/plain; charset=utf-8' };
+const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.pdf': 'application/pdf', '.xml': 'application/xml', '.txt': 'text/plain; charset=utf-8' };
 
 export async function createStaticServer(directory) {
   const files = new Map();
@@ -21,6 +21,8 @@ export async function createStaticServer(directory) {
     let path;
     try { path = decodeURIComponent(new URL(req.url, 'http://localhost').pathname); }
     catch { res.writeHead(400); res.end(); return; }
+    if (path === '/resources') { res.writeHead(308, {Location: '/resources/'}); res.end(); return; }
+    if (path === '/resources/') path = '/resources/index.html';
     if (path === '/') path = '/index.html';
     const body = files.get(path);
     const content = body || files.get('/404.html') || Buffer.from('Not found');
