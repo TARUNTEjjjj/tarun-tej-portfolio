@@ -9,3 +9,8 @@
 
 /assets/Avula-Tarun-Tej-Coding-Resume.pdf
   Content-Disposition: inline; filename="Avula-Tarun-Tej-Coding-Resume.pdf"
+
+/app-version.json
+  Cache-Control: no-store
+/resources/offline-worker.js
+  Cache-Control: no-cache
