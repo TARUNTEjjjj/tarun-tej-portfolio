@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "project": "tarun-tej-portfolio",
+  "title": "Tarun\u2019s engineering resource shelf",
+  "minStars": 500,
+  "maxPerCategory": 12,
+  "categories": [
+    {
+      "id": "web",
+      "title": "Web engineering",
+      "queries": [
+        "topic:web-development"
+      ],
+      "seeds": [
+        "mdn/content",
+        "freeCodeCamp/freeCodeCamp"
+      ]
+    },
+    {
+      "id": "creative",
+      "title": "Creative coding and visualization",
+      "queries": [
+        "topic:creative-coding"
+      ],
+      "seeds": [
+        "mrdoob/three.js",
+        "processing/p5.js"
+      ]
+    }
+  ]
+}

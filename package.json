@@ -9,7 +9,15 @@
     "check": "node --check dist/app.js && node --check dist/scene.js && node --check dist/ui-state.js && node scripts/check.mjs",
     "test:browser": "node scripts/browser-smoke.cjs",
     "test": "node --test scripts/*.test.mjs",
-    "test:load": "node scripts/load-test.mjs"
+    "test:load": "node scripts/load-test.mjs",
+    "resources:stage": "node scripts/stage-resource-explorer.mjs dist/resources",
+    "predev": "npm run resources:stage",
+    "precheck": "npm run resources:stage",
+    "build": "npm run resources:stage && npm run check",
+    "test:resources:ui": "node --test scripts/resource-explorer.test.mjs",
+    "resources:refresh": "node scripts/resources/resource-server.mjs refresh --config resources/sources.json --output resources/catalog.json",
+    "resources:serve": "node scripts/resources/resource-server.mjs serve --config resources/sources.json --snapshot resources/catalog.json",
+    "test:resources": "node --test scripts/resources/resource-catalog.test.mjs && node scripts/resources/check-catalog.mjs"
   },
   "devDependencies": {
     "playwright": "1.62.1"
