@@ -52,6 +52,7 @@ const checks = [];
       const trigger = page.locator(`.project-visual[data-project="${project}"]`);
       await trigger.click();
       assert.equal(await page.locator('dialog').evaluate(element => element.open), true);
+      assert.equal(await page.locator('#dialog-title').count(), 1, `${project} dialog renders its title`);
       const links = await page.locator('.dialog-links a').evaluateAll(elements => elements.map(element => element.href));
       assert.deepEqual(links, expectedLinks, `${project} exposes its live website and public source where available`);
       await page.keyboard.press('Escape');
