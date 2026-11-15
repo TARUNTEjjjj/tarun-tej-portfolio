@@ -2,7 +2,7 @@
 // own verified offline shell and never shares or deletes application caches.
 const NETWORK_TIMEOUT_MS = 4000;
 const RESOURCE_PATH = '/resources/';
-const APP_VERSION = "1038b17e98718d94b9107502645c5a7da29ad89ac8e5ee2f63e641a98bfce699";
+const APP_VERSION = "e80e4b95f8f8e7dc17fe15dd8179413d8aae23b06a00020c55a0c93421383903";
 
 // Updates wait for every open application window to report that it is safe.
 self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));

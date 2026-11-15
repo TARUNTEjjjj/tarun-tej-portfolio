@@ -61,6 +61,8 @@ Every run has hard configuration bounds: 1–1,000 pending requests, at most 10,
 
 The harness stops early after 10 failed requests, or at a failure rate of at least 10% after 20 completed requests. These are guardrails, not performance acceptance thresholds. A run passes only when every requested response completed with status 200 and no deadline or budget was exceeded. Exit code 0 means that bounded run passed, 1 means its criteria were not met, and 2 means configuration or report writing failed.
 
+The `--output` file is opened before the first request, so a path that cannot be written (a missing folder, a folder name, a read-only location) ends the run with exit code 2 before any traffic is sent. The report is always printed to standard output. If saving the file still fails after the run, the printed report is complete, its `passed` field tells whether the run met its criteria, and the exit code is 2.
+
 Record the deployed commit, deployment URL, date, exact command, resulting JSON, network region if known, and whether the assets were already cached. Never turn the configured concurrency into an advertised capacity number without reporting the observed outcome and limits.
 
 ## Evidence required for a stronger claim

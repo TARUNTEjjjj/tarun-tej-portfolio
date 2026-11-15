@@ -1,4 +1,4 @@
-import { writeFile } from 'node:fs/promises';
+import { open, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { performance } from 'node:perf_hooks';
 
@@ -124,10 +124,17 @@ export async function runLoad(options) {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
     const options = parseOptions(process.argv.slice(2));
+    // Open the report file before the first request, so a mistyped or unwritable --output path costs no traffic.
+    // Appending creates a missing file and leaves an earlier report untouched until this run has finished.
+    if (options.output) await (await open(options.output, 'a')).close();
     const result = await runLoad(options);
     const json = JSON.stringify(result, null, 2) + '\n';
-    if (options.output) await writeFile(options.output, json);
+    // Standard output comes first: a finished run is still reported if saving the file fails (a full disk, a removed folder).
     process.stdout.write(json);
     process.exitCode = result.passed ? 0 : 1;
+    if (options.output) await writeFile(options.output, json).catch(error => {
+      console.error(`Capacity check: the report was printed to standard output but could not be saved to ${options.output}: ${error.message}`);
+      process.exitCode = 2;
+    });
   } catch (error) { console.error(`Capacity check: ${error.message}`); process.exitCode = 2; }
 }
