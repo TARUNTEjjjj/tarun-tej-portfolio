@@ -1,6 +1,6 @@
 // Browser-independent rules used by the interface and regression checks.
-export function sceneRequiresConsent({ reducedMotion = false, narrow = false, saveData = false, effectiveType = '' } = {}) {
-  return Boolean(reducedMotion || narrow || saveData || ['slow-2g', '2g'].includes(effectiveType));
+export function sceneRequiresConsent({ reducedMotion = false, narrow = false, coarsePointer = false, saveData = false, effectiveType = '' } = {}) {
+  return Boolean(reducedMotion || narrow || coarsePointer || saveData || ['slow-2g', '2g'].includes(effectiveType));
 }
 export function projectKeyFromURL(value, allowedKeys) {
   const key = new URL(value).searchParams.get('project');
@@ -10,7 +10,8 @@ export function projectURL(value, key) {
   const url = new URL(value);
   if (key) url.searchParams.set('project', key);
   else url.searchParams.delete('project');
-  return url.pathname + url.search + url.hash;
+  // A path that begins with // would read as another host (//host/...); a leading /. keeps it on this origin.
+  return (url.pathname.startsWith('//') ? '/.' : '') + url.pathname + url.search + url.hash;
 }
 
 /** Literal, accent-insensitive AND search; query text never becomes markup or a regex. */

@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "python3 -m http.server 4173 --bind 127.0.0.1 --directory dist",
-    "check": "node --check dist/app.js && node --check dist/scene.js && node --check dist/ui-state.js && node scripts/check.mjs",
+    "check": "node --check dist/app.js && node --check dist/scene.js && node --check dist/ui-state.js && node --check dist/fallback.js && node scripts/check.mjs",
     "test:browser": "node scripts/browser-smoke.cjs",
     "test": "node --test scripts/*.test.mjs",
     "test:load": "node scripts/load-test.mjs",

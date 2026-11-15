@@ -19,7 +19,7 @@ The portfolio presents Tarun as a web developer and AI/ML enthusiast through con
 | Amber `#eac18a` | Maths mode, Axiom artwork and teaching | Reasoning, exactness and understanding. |
 | Violet `#b2a0ff` | Explore mode and AI-learning identity | Exploration, learning and evaluation. |
 
-Darker counterparts of accent colours are used for small labels on light backgrounds. Neutral tints distinguish surfaces; they do not indicate a separate skill level. No proficiency bars, invented scores or arbitrary achievement metrics are used.
+Darker counterparts of accent colours are used for small labels on light backgrounds. On the portfolio page, text colours keep WCAG AA contrast against the page, card or dialog background they are set on: at least 4.5:1, or 3:1 for large headings. Decorative text and symbols hidden from assistive technology are not held to that ratio, and some are lighter, such as the fractions and caption in the AxiomMath card's artwork and the arrows in some card corners and after the repository links. Where artwork is drawn behind text, the parts of letters it crosses can fall below AA: at some widths between 481 and about 950px the decorative card artwork crosses parts of the project taglines, chiefly Forge's and PocketKV's, and once the 3D sculpture is shown, its knot and orbit lines pass behind parts of its caption and status line and, at some widths around 900px, the end of the heading. Neutral tints distinguish surfaces; they do not indicate a separate skill level. No proficiency bars, invented scores or arbitrary achievement metrics are used.
 
 ## Original 3D and artwork
 

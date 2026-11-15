@@ -4,18 +4,20 @@ import * as THREE from './vendor/three.module.js';
  * A procedural, locally rendered sculpture: no model or remote image requests.
  * initScene(element) -> { setMode('build'|'math'|'learn'), setPaused(boolean), destroy() }
  * The element receives .scene-ready only after a successful render. Its existing
- * CSS fallback remains available if WebGL cannot start or its context is lost.
+ * CSS fallback remains available if WebGL cannot start, and while its context is lost.
  */
 export function initScene(container, { paused = false, mode: initialMode = 'build' } = {}) {
   const noop = { setMode() {}, setPaused() {}, destroy() {} };
   if (!container) return noop;
 
-  const compact = window.matchMedia('(pointer: coarse), (max-width: 767px)').matches ||
-    (navigator.hardwareConcurrency > 0 && navigator.hardwareConcurrency <= 4) ||
+  // Touch screens and narrow windows get a lighter render budget. The window can widen after 3D loads, so the
+  // query is followed; the hardware limits do not change.
+  const compactQuery = window.matchMedia('(pointer: coarse), (max-width: 767px)');
+  const limitedHardware = (navigator.hardwareConcurrency > 0 && navigator.hardwareConcurrency <= 4) ||
     (navigator.deviceMemory > 0 && navigator.deviceMemory <= 4);
+  let compact = compactQuery.matches || limitedHardware;
   // This slowly moving decoration does not need a 60–120 Hz render loop.
   const frameInterval = 1000 / 30;
-  const pixelBudget = compact ? 600_000 : 1_500_000;
   let renderer;
   try {
     renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'low-power' });
@@ -56,17 +58,24 @@ export function initScene(container, { paused = false, mode: initialMode = 'buil
   softbox(1.2, 6, [4, 1, 2], 7);
   softbox(6, 2, [0, 5, -1], 4);
   softbox(2, 4, [1, -2, -5], 1.5);
-  const pmrem = new THREE.PMREMGenerator(renderer);
   let environment;
-  try {
-    environment = pmrem.fromScene(studio, 0.025, 0.1, 50);
-    scene.environment = environment.texture;
-  } catch {
-    // Directional lights also make a readable object on restricted renderers.
-  } finally {
-    pmrem.dispose();
-    studioResources.forEach(resource => resource.dispose());
+  // The map is rendered on the GPU, so a restored context renders it again (the old one went with the lost
+  // context). Disposing the panels frees their GPU copies; three.js uploads them again if they are rendered again.
+  function buildEnvironment() {
+    environment = undefined;
+    scene.environment = null;
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    try {
+      environment = pmrem.fromScene(studio, 0.025, 0.1, 50);
+      scene.environment = environment.texture;
+    } catch {
+      // Directional lights also make a readable object on restricted renderers.
+    } finally {
+      pmrem.dispose();
+      studioResources.forEach(resource => resource.dispose());
+    }
   }
+  buildEnvironment();
 
   const key = new THREE.DirectionalLight(0xf6f4ef, 3.2);
   key.position.set(-3, 4, 5);
@@ -163,6 +172,16 @@ export function initScene(container, { paused = false, mode: initialMode = 'buil
     return !destroyed && !lostContext && !document.hidden && inViewport && hasSize;
   }
   function mayAnimate() { return mayRender() && !userPaused; }
+  // Finish a theme change at once when the scene will not animate it to the end.
+  function settleMode() {
+    accent.copy(mode.color);
+    rim.color.copy(accent);
+    orbitMaterial.color.copy(accent);
+    beadMaterial.color.copy(accent);
+    beadMaterial.emissive.copy(accent);
+    metal.color.copy(baseMetal).lerp(accent, 0.2);
+    core.rotation.z = mode.z;
+  }
 
   function paint() {
     if (!mayRender()) return;
@@ -239,6 +258,7 @@ export function initScene(container, { paused = false, mode: initialMode = 'buil
     const { width, height } = container.getBoundingClientRect();
     hasSize = width > 0 && height > 0;
     if (!hasSize) { synchronize(); return; }
+    const pixelBudget = compact ? 600_000 : 1_500_000;
     const ratio = Math.min(window.devicePixelRatio || 1, compact ? 1.25 : 1.5,
       Math.sqrt(pixelBudget / (width * height)));
     if (width === previousWidth && height === previousHeight && ratio === previousRatio) return;
@@ -250,7 +270,30 @@ export function initScene(container, { paused = false, mode: initialMode = 'buil
     renderer.setPixelRatio(ratio);
     renderer.setSize(width, height, false);
     synchronize();
+    // Resizing clears the canvas, and ResizeObserver runs after this frame's animation callback has drawn:
+    // draw now instead of showing an empty canvas until the next frame.
+    if (mayRender()) { paint(); dirty = false; }
   }
+  // ResizeObserver sees CSS size only. A window that widens past the compact query gets the full budget and a
+  // finer knot; a move to a screen with another pixel density changes the resolution at the same CSS size.
+  function updateCompact() {
+    const next = compactQuery.matches || limitedHardware;
+    if (next === compact) return;
+    compact = next;
+    geometries.forEach(geometry => geometry.dispose());
+    geometries.clear();
+    core.geometry = geometryFor(selectedMode);
+    // Queue a frame for the new knot; resize() draws it at once if the budget also changes the resolution.
+    synchronize();
+    resize();
+  }
+  let resolutionQuery;
+  function watchResolution() {
+    resolutionQuery?.removeEventListener('change', resolutionChanged);
+    resolutionQuery = window.matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
+    resolutionQuery.addEventListener('change', resolutionChanged);
+  }
+  function resolutionChanged() { watchResolution(); resize(); }
 
   function move(event) {
     if (!mayAnimate() || event.pointerType === 'touch') return;
@@ -268,9 +311,12 @@ export function initScene(container, { paused = false, mode: initialMode = 'buil
     container.dataset.sceneReady = 'false';
   }
   function contextRestored() {
-    // A lost PMREM target cannot be reliably rebuilt from its disposed source.
-    // Keep the lightweight fallback; reinitialization is an explicit caller action.
-    lostContext = true;
+    // three.js has rebuilt its GL state and uploads the scene again; the environment map went with the old
+    // context, so render it again. The next paint marks the scene ready.
+    lostContext = false;
+    canvas.style.opacity = '';
+    buildEnvironment();
+    synchronize();
   }
 
   const resizeObserver = new ResizeObserver(resize);
@@ -285,10 +331,11 @@ export function initScene(container, { paused = false, mode: initialMode = 'buil
   document.addEventListener('visibilitychange', synchronize);
   canvas.addEventListener('webglcontextlost', contextLost);
   canvas.addEventListener('webglcontextrestored', contextRestored);
+  compactQuery.addEventListener('change', updateCompact);
+  watchResolution();
+  // The first resize paints, which reports renderer availability before returning to the deferred app loader.
+  // Later theme and pause changes are coalesced into scheduled frames.
   resize();
-  // Report renderer availability before returning to the deferred app loader.
-  // Later theme, resize and pause changes are coalesced into scheduled frames.
-  paint();
   dirty = false;
 
   return {
@@ -297,20 +344,14 @@ export function initScene(container, { paused = false, mode: initialMode = 'buil
       selectedMode = name;
       mode = modes[name];
       core.geometry = geometryFor(name);
-      if (!mayAnimate()) {
-        accent.copy(mode.color);
-        rim.color.copy(accent);
-        orbitMaterial.color.copy(accent);
-        beadMaterial.color.copy(accent);
-        beadMaterial.emissive.copy(accent);
-        metal.color.copy(baseMetal).lerp(accent, 0.2);
-        core.rotation.z = mode.z;
-      }
+      if (!mayAnimate()) settleMode();
       synchronize();
     },
     setPaused(paused) {
       if (destroyed || userPaused === Boolean(paused)) return;
       userPaused = Boolean(paused);
+      // A theme change that is still easing in would otherwise stay half-blended in the paused frame.
+      if (userPaused) settleMode();
       synchronize();
     },
     destroy() {
@@ -324,6 +365,8 @@ export function initScene(container, { paused = false, mode: initialMode = 'buil
       document.removeEventListener('visibilitychange', synchronize);
       canvas.removeEventListener('webglcontextlost', contextLost);
       canvas.removeEventListener('webglcontextrestored', contextRestored);
+      compactQuery.removeEventListener('change', updateCompact);
+      resolutionQuery.removeEventListener('change', resolutionChanged);
       geometries.forEach(geometry => geometry.dispose());
       [metal, orbitGeometry, orbitMaterial, beadGeometry, beadMaterial].forEach(resource => resource.dispose());
       environment?.dispose();
