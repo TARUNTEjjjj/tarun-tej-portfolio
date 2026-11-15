@@ -30,13 +30,23 @@ const checks = [];
       assert.equal(await page.locator('.project:visible').count(), count);
     }
     checks.push('Project filters expose the correct project sets');
+    await page.locator('#project-search').fill('neural');
+    assert.equal(await page.locator('.project:visible').count(), 1);
+    await page.locator('[data-filter="systems"]').click();
+    assert.equal(await page.locator('.project:visible').count(), 0);
+    assert.match(await page.locator('#filter-status').textContent(), /No projects match/);
+    await page.locator('#clear-project-search').click();
+    assert.equal(await page.locator('.project:visible').count(), 6);
+    assert.equal(await page.locator('#project-search').inputValue(), '');
+    checks.push('Search composes with categories; empty results recover through clear filters');
+
     const projectLinks = {
-      axiom: ['https://axiom-sat.pages.dev/'],
-      forge: ['https://forge-learning-academy.pages.dev/'],
-      math: [],
-      pocket: [],
-      storm: ['https://stormsignal-weather.pages.dev/'],
-      neural: ['https://neural-math-lab.pages.dev/'],
+      axiom: ['https://axiom-sat.pages.dev/', 'https://github.com/TARUNTEjjjj/axiom-sat'],
+      forge: ['https://forge-learning-academy.pages.dev/', 'https://github.com/TARUNTEjjjj/forge-learning-academy'],
+      math: ['https://github.com/TARUNTEjjjj/axiom-math'],
+      pocket: ['https://github.com/TARUNTEjjjj/pocketkv'],
+      storm: ['https://stormsignal-weather.pages.dev/', 'https://github.com/TARUNTEjjjj/stormsignal'],
+      neural: ['https://neural-math-lab.pages.dev/', 'https://github.com/TARUNTEjjjj/neural-math-lab'],
     };
     for (const [project, expectedLinks] of Object.entries(projectLinks)) {
       const trigger = page.locator(`.project-visual[data-project="${project}"]`);
@@ -44,18 +54,28 @@ const checks = [];
       assert.equal(await page.locator('dialog').evaluate(element => element.open), true);
       assert.equal(await page.locator('#dialog-title').count(), 1, `${project} dialog renders its title`);
       const links = await page.locator('.dialog-links a').evaluateAll(elements => elements.map(element => element.href));
-      assert.deepEqual(links, expectedLinks, `${project} exposes only its available live website`);
-      assert.equal(await page.locator('a[href*="github.com"]').count(), 0, 'Private repository links remain absent');
+      assert.deepEqual(links, expectedLinks, `${project} exposes its live website and public source where available`);
       await page.keyboard.press('Escape');
       assert.equal(await page.locator('dialog').evaluate(element => element.open), false);
       assert.equal(await trigger.evaluate(element => element === document.activeElement), true);
     }
-    checks.push('All case studies expose only their available live websites; Escape closes and focus returns');
+    const repositories = await page.locator('a[href^="https://github.com/TARUNTEjjjj/"]').evaluateAll(elements =>
+      [...new Set(elements.map(element => new URL(element.href).pathname.split('/')[2]))].sort());
+    assert.deepEqual(repositories, [
+      'attention-atlas', 'avenquellis-proof-grader', 'avenquellis-question-engine', 'avenquellis-web',
+      'axiom-math', 'axiom-sat', 'forge-learning-academy', 'forge-macos', 'neural-math-lab',
+      'pocketkv', 'stormsignal', 'tarun-tej-portfolio', 'vedaris-jee',
+    ]);
+    checks.push('Case studies and collection link all 13 public repositories; Escape closes and focus returns');
     await page.locator('.copy-email').click();
     assert.equal(await page.evaluate(() => navigator.clipboard.readText()), 'avulataruntej123@gmail.com');
-    const pdf = await context.request.get(`${baseURL}/assets/Avula-Tarun-Tej-Coding-Resume.pdf`);
-    assert.equal(pdf.status(), 200);
-    checks.push('Email copy and résumé download work');
+    for (const file of ['Avula-Tarun-Tej-Coding-Resume.pdf', 'Avula-Tarun-Tej-GitHub-Projects-Resume.pdf']) {
+      assert(await page.locator(`a[href="assets/${file}"]`).count() > 0, `${file} is linked`);
+      const pdf = await context.request.get(`${baseURL}/assets/${file}`);
+      assert.equal(pdf.status(), 200);
+      assert.equal((await pdf.body()).subarray(0, 5).toString(), '%PDF-');
+    }
+    checks.push('Email copy and both résumé downloads work');
     for (const width of [1440, 1024, 768, 390, 320]) {
       await page.setViewportSize({ width, height: 900 });
       await page.waitForTimeout(120);

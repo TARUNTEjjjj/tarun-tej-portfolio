@@ -12,3 +12,11 @@ export function projectURL(value, key) {
   else url.searchParams.delete('project');
   return url.pathname + url.search + url.hash;
 }
+
+/** Literal, accent-insensitive AND search; query text never becomes markup or a regex. */
+export function matchesProject({ text = '', categories = '' }, { query = '', category = 'all' } = {}) {
+  const normalize = value => String(value).normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase();
+  if (category !== 'all' && !categories.split(/\s+/).includes(category)) return false;
+  const haystack = normalize(text);
+  return normalize(query).trim().split(/\s+/).filter(Boolean).every(word => haystack.includes(word));
+}
