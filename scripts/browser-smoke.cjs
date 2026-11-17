@@ -6,6 +6,13 @@ const baseURL = process.env.PORTFOLIO_URL || 'http://127.0.0.1:4173';
 const options = { headless: true };
 if (process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE) options.executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
 const checks = [];
+// Optional catalog/offline refreshes can outlive a working page. Wait for the actual
+// interface contract, not a quiet network; scene checks below still await their own state.
+async function openPortfolio(page, url) {
+  const response = await page.goto(url, { waitUntil: 'domcontentloaded' });
+  await page.locator('html.app-ready').waitFor({ state: 'attached' });
+  return response;
+}
 (async () => {
   mkdirSync('qa', { recursive: true });
   const browser = await chromium.launch(options);
@@ -32,12 +39,45 @@ const checks = [];
       productionContext.on('console', message => { if (message.text().includes('Content Security Policy')) policyViolations.push(message.text()); });
       return productionContext;
     };
+    // A background fetch that never answers must not block an otherwise usable case
+    // study. This deterministically exercises a condition that can make networkidle hang.
+    const pending = await newContext({ reducedMotion: 'reduce' });
+    const pendingPage = await pending.newPage();
+    let captureRoute;
+    await pendingPage.route('**/__readiness-probe', route => { captureRoute(route); });
+    await pendingPage.addInitScript(() => {
+      addEventListener('DOMContentLoaded', () => {
+        window.readinessProbeFinished = false;
+        void fetch('/__readiness-probe').catch(() => {}).finally(() => { window.readinessProbeFinished = true; });
+      }, { once: true });
+    });
+    let heldRequestTimeout;
+    const heldRequest = new Promise((resolve, reject) => {
+      heldRequestTimeout = setTimeout(() => reject(new Error('The readiness probe request was not intercepted')), 30000);
+      captureRoute = route => { clearTimeout(heldRequestTimeout); resolve(route); };
+    });
+    try {
+      const [, heldRoute] = await Promise.all([openPortfolio(pendingPage, `${baseURL}/?project=neural`), heldRequest]);
+      assert.equal(await pendingPage.evaluate(() => window.readinessProbeFinished), false);
+      await assert.rejects(pendingPage.waitForLoadState('networkidle', { timeout: 750 }), { name: 'TimeoutError' }, 'An active background fetch prevents network-idle readiness');
+      assert.equal(await pendingPage.locator('dialog').evaluate(element => element.open), true);
+      assert.equal(await pendingPage.locator('#dialog-title').textContent(), 'Neural Math Lab');
+      await pendingPage.keyboard.press('Escape');
+      await pendingPage.locator('[data-filter="math"]').click();
+      assert.equal(await pendingPage.locator('.project:visible').count(), 3);
+      assert.equal(await pendingPage.evaluate(() => window.readinessProbeFinished), false, 'The UI works before the unrelated response arrives');
+      await heldRoute.fulfill({ status: 204, body: '' });
+    } finally {
+      clearTimeout(heldRequestTimeout);
+      await pending.close();
+    }
+    checks.push('Case studies and filters work while a background request stays pending');
     const context = await newContext({ viewport: { width: 1440, height: 1000 }, permissions: ['clipboard-read', 'clipboard-write'] });
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
-    const home = await page.goto(baseURL, { waitUntil: 'networkidle' });
+    const home = await openPortfolio(page, baseURL);
     const policy = applyHeaders(headerRules, baseURL)['content-security-policy'];
     assert.ok(policy && home.headers()['content-security-policy'] === policy, 'The page is served with its production Content-Security-Policy');
     await page.waitForSelector('#hero-scene.scene-ready');
@@ -156,7 +196,7 @@ const checks = [];
     checks.push('Double-clicking × or the backdrop closes the case study without opening the card underneath');
     // After an in-page link (#work), closing must not re-run fragment navigation and lose the reader's place.
     // A fresh document matters: once Chrome has restored scroll for an earlier traversal, it stops re-scrolling.
-    await page.goto(baseURL, { waitUntil: 'networkidle' });
+    await openPortfolio(page, baseURL);
     await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; });
     await page.locator('.hero-actions a[href="#work"]').click();
     const pocket = page.locator('.project-visual[data-project="pocket"]');
@@ -255,7 +295,8 @@ const checks = [];
     }
     checks.push('Filter focus rings are not clipped on narrow screens');
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(baseURL, { waitUntil: 'networkidle' });
+    await openPortfolio(page, baseURL);
+    await page.waitForLoadState('load');
     assert.equal(await page.locator('#hero-scene').getAttribute('data-scene-state'), 'deferred');
     await page.locator('.scene-enable').focus();
     await page.keyboard.press('Enter');
@@ -273,9 +314,12 @@ const checks = [];
     await page.waitForTimeout(800);
     await page.screenshot({ path: 'qa/mobile-full.png', fullPage: true });
     checks.push('Mobile menu works; no overflow from 320px to 1440px');
+    assert.equal(await page.locator('#static-fallback + style').count(), 0, 'The static fallback stays off when app.js runs');
+    assert.deepEqual(errors, [], 'No browser console errors on supported WebGL path');
+    await context.close();
     const reduced = await newContext({ reducedMotion: 'reduce' });
     const reducedPage = await reduced.newPage();
-    await reducedPage.goto(baseURL, { waitUntil: 'networkidle' });
+    await openPortfolio(reducedPage, baseURL);
     assert.equal(await reducedPage.locator('.motion-toggle').getAttribute('aria-pressed'), 'true');
     assert.equal(await reducedPage.locator('html').evaluate(element => getComputedStyle(element).scrollBehavior), 'auto');
     checks.push('Reduced-motion preference starts with animation paused');
@@ -318,6 +362,7 @@ const checks = [];
     assert.deepEqual(await lowContrast('#project-dialog'), [], 'Case-study text meets WCAG AA contrast');
     await reducedPage.keyboard.press('Escape');
     checks.push('Text meets WCAG AA contrast on the page and in case studies');
+    await reduced.close();
     const fallback = await newContext();
     const fallbackPage = await fallback.newPage();
     const fallbackErrors = [];
@@ -327,7 +372,7 @@ const checks = [];
       const getContext = HTMLCanvasElement.prototype.getContext;
       HTMLCanvasElement.prototype.getContext = function(type, ...args) { return type.startsWith('webgl') ? null : getContext.call(this, type, ...args); };
     });
-    await fallbackPage.goto(baseURL, { waitUntil: 'networkidle' });
+    await openPortfolio(fallbackPage, baseURL);
     // The CSS sculpture also shows while 3D waits and loads: let the attempt finish, then check where it ended.
     await fallbackPage.waitForSelector('#hero-scene:is([data-scene-state="ready"], [data-scene-state="fallback"])');
     assert.deepEqual(await fallbackPage.evaluate(() => ({
@@ -342,18 +387,22 @@ const checks = [];
     assert.equal(await fallbackPage.locator('.project:visible').count(), 3);
     assert.deepEqual(fallbackErrors.filter(text => !text.includes('Error creating WebGL context')), [], 'Only the missing WebGL context is reported');
     checks.push('WebGL-unavailable fallback preserves content and controls');
+    await fallback.close();
     const tablet = await newContext({ viewport: { width: 1024, height: 768 }, hasTouch: true, isMobile: true });
     const tabletPage = await tablet.newPage();
-    await tabletPage.goto(baseURL, { waitUntil: 'networkidle' });
+    await openPortfolio(tabletPage, baseURL);
+    await tabletPage.waitForLoadState('load');
     await tabletPage.waitForTimeout(2000);
     assert.equal(await tabletPage.evaluate(() => matchMedia('(pointer: coarse)').matches), true, 'Touch emulation reports a coarse pointer');
     assert.equal(await tabletPage.locator('#hero-scene').getAttribute('data-scene-state'), 'deferred', 'Wide touch screens wait for 3D consent');
     checks.push('Touch screens wider than 760px wait for 3D consent');
+    await tablet.close();
     const shared = await newContext({ viewport: { width: 1440, height: 1000 } });
     const sharedPage = await shared.newPage();
     const sceneRequests = [];
     sharedPage.on('request', request => { if (new URL(request.url()).pathname === '/scene.js') sceneRequests.push(request.url()); });
-    await sharedPage.goto(`${baseURL}/?project=storm`, { waitUntil: 'networkidle' });
+    await openPortfolio(sharedPage, `${baseURL}/?project=storm`);
+    await sharedPage.waitForLoadState('load');
     assert.equal(await sharedPage.locator('dialog').evaluate(element => element.open), true);
     await sharedPage.waitForTimeout(2000);
     assert.equal(await sharedPage.locator('#hero-scene').getAttribute('data-scene-state'), 'deferred', '3D waits while a shared case study is open');
@@ -394,6 +443,7 @@ const checks = [];
     assert.ok(afterRestore.drawn > 0 && Math.abs(afterRestore.drawn - beforeLoss.drawn) <= beforeLoss.drawn * 0.02 && Math.abs(afterRestore.light - beforeLoss.light) <= beforeLoss.light * 0.02,
       `The restored scene draws the frame it drew before the loss (${JSON.stringify({ beforeLoss, afterRestore })})`);
     checks.push('A lost WebGL context that the browser restores brings the 3D scene back');
+    await shared.close();
     // A window widened after 3D was enabled, or moved to a screen with another pixel density, renders like a fresh load
     // there. The hardware is reported above the low-power limits, which CI runners fall under.
     const growing = await newContext({ viewport: { width: 700, height: 900 }, deviceScaleFactor: 2 });
@@ -415,14 +465,14 @@ const checks = [];
       }, 400);
     }));
     const widenedPage = await growing.newPage();
-    await widenedPage.goto(baseURL, { waitUntil: 'networkidle' });
+    await openPortfolio(widenedPage, baseURL);
     await widenedPage.locator('.scene-enable').click();
     await widenedPage.waitForSelector('#hero-scene.scene-ready');
     await widenedPage.setViewportSize({ width: 1440, height: 1000 });
     const widened = await rendering(widenedPage);
     const freshPage = await growing.newPage();
     await freshPage.setViewportSize({ width: 1440, height: 1000 });
-    await freshPage.goto(baseURL, { waitUntil: 'networkidle' });
+    await openPortfolio(freshPage, baseURL);
     await freshPage.waitForSelector('#hero-scene.scene-ready');
     assert.deepEqual(widened, await rendering(freshPage), 'A window widened after enabling 3D renders like a fresh load');
     // Chrome's device emulation updates the pixel-density media query without firing its change event, so the test
@@ -438,6 +488,7 @@ const checks = [];
     assert.deepEqual(await moveToScreen(1), { perCSSPixel: 1, knot: widened.knot }, 'A move to a 1x screen renders one pixel per CSS pixel');
     assert.ok((await moveToScreen(1.5)).perCSSPixel > 1, 'A second move, to a 1.5x screen, raises the resolution again');
     checks.push('3D detail and resolution follow a widened window and a change of screen pixel density');
+    await growing.close();
     const failed3D = await newContext();
     const failed3DPage = await failed3D.newPage();
     await failed3DPage.route('**/scene.js', route => route.abort());
@@ -446,19 +497,20 @@ const checks = [];
       new MutationObserver(records => records.forEach(record => { if (record.oldValue === 'loading') window.sceneLoadAttempts++; }))
         .observe(document, { subtree: true, attributeFilter: ['data-scene-state'], attributeOldValue: true });
     });
-    await failed3DPage.goto(baseURL, { waitUntil: 'networkidle' });
+    await openPortfolio(failed3DPage, baseURL);
     await failed3DPage.waitForSelector('#hero-scene[data-scene-state="fallback"]');
     await failed3DPage.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
     await failed3DPage.waitForTimeout(2000);
     assert.equal(await failed3DPage.evaluate(() => window.sceneLoadAttempts), 1, 'A failed 3D download is not retried');
     assert.equal(await failed3DPage.locator('#hero-scene').getAttribute('data-scene-state'), 'fallback');
     checks.push('A failed 3D download stays in the static fallback');
+    await failed3D.close();
     // A restored tab keeps a case study's history.state, but the entry before it is another document there:
     // closing must not go back to it, which would reload the site and lose the visitor's place.
     const restored = await newContext({ viewport: { width: 1440, height: 1000 } });
     const restoredPage = await restored.newPage();
-    await restoredPage.goto(baseURL, { waitUntil: 'networkidle' });
-    await restoredPage.goto(`${baseURL}/?project=neural`, { waitUntil: 'networkidle' });
+    await openPortfolio(restoredPage, baseURL);
+    await openPortfolio(restoredPage, `${baseURL}/?project=neural`);
     await restoredPage.evaluate(() => { history.replaceState({ portfolioProject: 'neural' }, ''); window.closedInPlace = true; });
     await restoredPage.keyboard.press('Escape');
     await restoredPage.waitForTimeout(500);
@@ -466,7 +518,7 @@ const checks = [];
     assert.deepEqual(await restoredPage.evaluate(() => ({ samePage: window.closedInPlace === true, open: document.querySelector('dialog').open, search: location.search })), { samePage: true, open: false, search: '' }, 'A restored case study closes without reloading the site');
     // On a #fragment address the closed entry keeps the restored state. The next case study must add its own entry
     // instead of reusing that one, or Back from it would return to the document before the restored one.
-    await restoredPage.goto(`${baseURL}/?project=neural#work`, { waitUntil: 'networkidle' });
+    await openPortfolio(restoredPage, `${baseURL}/?project=neural#work`);
     await restoredPage.evaluate(() => { history.replaceState({ portfolioProject: 'neural' }, ''); window.restoredOnFragment = true; });
     await restoredPage.keyboard.press('Escape');
     await restoredPage.waitForTimeout(500);
@@ -478,11 +530,12 @@ const checks = [];
     await restoredPage.waitForLoadState('load');
     assert.deepEqual(await restoredPage.evaluate(() => ({ samePage: window.restoredOnFragment === true, open: document.querySelector('dialog').open, search: location.search, hash: location.hash })), { samePage: true, open: false, search: '', hash: '#work' }, 'Back from the next case study closes it without reloading the site');
     checks.push('A case study restored from an earlier session closes in place');
+    await restored.close();
     // On a path that starts with // (a mistyped link a server still answers with the home page), case-study URLs must
     // stay on this origin: "//?project=…" would name another host, and history.pushState would throw.
     const doubleSlash = await newContext({ viewport: { width: 1440, height: 1000 }, permissions: ['clipboard-read', 'clipboard-write'] });
     const doubleSlashPage = await doubleSlash.newPage();
-    await doubleSlashPage.goto(baseURL, { waitUntil: 'networkidle' });
+    await openPortfolio(doubleSlashPage, baseURL);
     await doubleSlashPage.evaluate(() => history.replaceState(null, '', '/.//'));
     await doubleSlashPage.locator('.project-visual[data-project="neural"]').click();
     assert.equal(await doubleSlashPage.locator('dialog').evaluate(element => element.open), true, 'A case study opens on a // path');
@@ -493,10 +546,11 @@ const checks = [];
     await doubleSlashPage.waitForFunction(() => !location.search && !document.querySelector('dialog').open, null, { timeout: 3000 });
     assert.equal(new URL(doubleSlashPage.url()).pathname, '//');
     checks.push('Case studies open, copy their link and close on a //-prefixed path');
+    await doubleSlash.close();
     // WCAG 1.4.12 text spacing: the hero grows instead of clipping its calls to action or running them under its footer.
     const spacing = await newContext({ viewport: { width: 1280, height: 800 } });
     const spacingPage = await spacing.newPage();
-    await spacingPage.goto(baseURL, { waitUntil: 'networkidle' });
+    await openPortfolio(spacingPage, baseURL);
     // A reader's own spacing styles are not subject to the page's Content-Security-Policy; a CSSOM sheet is not either.
     await spacingPage.evaluate(css => { const sheet = new CSSStyleSheet(); sheet.replaceSync(css); document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet]; },
       '*{line-height:1.5!important;letter-spacing:.12em!important;word-spacing:.16em!important}p{margin-bottom:2em!important}');
@@ -509,10 +563,11 @@ const checks = [];
       }), { insideHero: true, clickable: true, aboveFooter: true }, `${action} stays visible and clickable with increased text spacing`);
     }
     checks.push('Hero calls to action stay visible with increased text spacing');
+    await spacingPage.close();
     // Browsers without the svh unit (Safari before 15.4, Chrome before 108, Firefox before 101) drop each declaration
     // that uses it. In windows no taller than the hero's minimum height, the hero must be just as tall there.
     const svhPage = await spacing.newPage();
-    await svhPage.goto(baseURL, { waitUntil: 'networkidle' });
+    await openPortfolio(svhPage, baseURL);
     for (const [width, height] of [[1280, 800], [1024, 768]]) {
       await svhPage.setViewportSize({ width, height });
       await svhPage.waitForTimeout(120);
@@ -531,10 +586,11 @@ const checks = [];
       assert.equal(heroHeights.unsupported, heroHeights.supported, `Without svh support the hero keeps its minimum height at ${width}x${height}`);
     }
     checks.push('The hero keeps its minimum height in browsers without the svh unit');
+    await spacing.close();
     // Forced colours (Windows contrast themes) replace the colours that mark the pressed filter and theme.
     const forced = await newContext({ forcedColors: 'active', reducedMotion: 'reduce' });
     const forcedPage = await forced.newPage();
-    await forcedPage.goto(baseURL, { waitUntil: 'networkidle' });
+    await openPortfolio(forcedPage, baseURL);
     await forcedPage.locator('[data-filter="math"]').click();
     await forcedPage.locator('[data-mode="math"]').click();
     await forcedPage.waitForTimeout(200);
@@ -547,6 +603,7 @@ const checks = [];
       return { filter: look('[data-filter="math"]') !== look('[data-filter="web"]'), theme: look('[data-mode="math"]') !== look('[data-mode="learn"]') };
     }), { filter: true, theme: true }, 'The pressed filter and theme stay visible in forced colours');
     checks.push('Pressed filter and theme stay visible in forced colours');
+    await forced.close();
     // The static layout used without JavaScript, or when app.js cannot run: the header links are visible and clickable
     // (not under the notice), the header clears the hero text, the search field (which needs app.js) is hidden, and the
     // card artwork is not a dead button in the Tab order.
@@ -572,6 +629,7 @@ const checks = [];
       await noScriptPage.goto(baseURL, { waitUntil: 'load' });
       assert.equal(await noScriptPage.locator('.noscript-note').isVisible(), true);
       assert.deepEqual(await noScriptPage.evaluate(staticLayout), staticExpected, `The no-JavaScript layout works at ${width}px`);
+      await noScript.close();
     }
     checks.push('Without JavaScript the notice leaves the navigation usable and the card artwork leaves the Tab order');
     // Scripting on, but app.js cannot run: a failed download, or Safari before 14, whose MediaQueryList is not an EventTarget.
@@ -584,12 +642,11 @@ const checks = [];
       const brokenPage = await broken.newPage();
       await brokenPage.goto(baseURL, { waitUntil: 'load' });
       assert.deepEqual(await brokenPage.evaluate(staticLayout), staticExpected, `${failure}: phones keep a usable navigation`);
+      await broken.close();
     }
-    assert.equal(await page.locator('#static-fallback + style').count(), 0, 'The static fallback stays off when app.js runs');
     checks.push('When app.js cannot run, phones get the static navigation instead of a dead menu button');
     assert.deepEqual(policyViolations, [], 'No page breaks its production Content-Security-Policy');
     checks.push('Every page runs under the production response headers without Content-Security-Policy violations');
-    assert.deepEqual(errors, [], 'No browser console errors on supported WebGL path');
     console.log(JSON.stringify({ passed: checks }, null, 2));
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
