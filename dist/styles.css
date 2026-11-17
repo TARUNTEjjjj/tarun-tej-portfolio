@@ -94,3 +94,10 @@ dialog{border:0;border-radius:20px;max-width:720px;width:calc(100% - 32px);paddi
 .resume-links{display:flex;gap:16px 25px;flex-wrap:wrap;margin-top:24px}.about-copy .resume-links .text-link{margin-top:0}
 @media(max-width:760px){.repository-heading{display:block}.repository-heading>p{margin-top:17px;max-width:480px}.repository-list{column-gap:24px}.repository-heading h3{font-size:25px}.project-meta>div>p:not(.project-type){font-size:12px}.site-footer>div{flex-wrap:wrap}}
 @media(max-width:480px){.repository-list{grid-template-columns:1fr}.repository-list a{min-height:88px}.repository-collection{margin-top:42px;padding-top:29px}.repository-heading h3{font-size:24px}.contact-top .eyebrow{max-width:32ch}}
+
+/* Keep card captions readable when artwork and arrow controls crowd narrow columns. */
+.project-visual .visual-bottom{right:70px;max-width:none;line-height:1.6;background:inherit;opacity:1;z-index:3;padding:4px 5px;margin-left:-5px;border-radius:3px}
+.forge-title,.pocket-note{background:inherit;box-shadow:0 0 0 5px #112026;border-radius:2px}
+.pocket-note{box-shadow:0 0 0 5px #dfe9e7}
+@media(max-width:760px){.project-visual .visual-bottom{right:55px}}
+@media(max-width:480px){.project-visual .visual-bottom{right:65px}}
