@@ -586,10 +586,20 @@ async function openPortfolio(page, url) {
           context.drawImage(bitmap, 0, 0);
           return context;
         }));
-        return rects.filter(({ x, y, w, h }) => {
+        // Name each text box whose pixels changed, with how many, the largest channel change, how many of those were bare
+        // plate (#0b0e11) without the artwork rather than letters, and the first changed pixel's page position.
+        return rects.flatMap(({ x, y, w, h, text }) => {
           const [a, b] = pixels.map(context => context.getImageData(x, y, w, h).data);
-          return a.some((value, index) => Math.abs(value - b[index]) > 2);
-        }).map(rect => rect.text);
+          let changed = 0, largest = 0, onPlate = 0, first;
+          for (let index = 0; index < a.length; index += 4) {
+            const delta = Math.max(...[0, 1, 2].map(channel => Math.abs(a[index + channel] - b[index + channel])));
+            if (delta <= 2) continue;
+            changed++; largest = Math.max(largest, delta);
+            if (Math.abs(b[index] - 11) + Math.abs(b[index + 1] - 14) + Math.abs(b[index + 2] - 17) <= 3) onPlate++;
+            first ??= `${x + (index / 4) % w},${y + Math.floor(index / 4 / w)}`;
+          }
+          return changed ? [`${text} (${changed}/${w * h} px, max Δ${largest}, ${onPlate} on bare plate, first at ${first})`] : [];
+        });
       }, { shots: [withArtwork, withoutArtwork], rects });
     };
     // Without the plates (the reported problem), the same comparison must catch the sculpture behind the text at 900px.
