@@ -600,7 +600,24 @@ async function openPortfolio(page, url) {
           }
           return changed ? [`${text} (${changed}/${w * h} px, max Δ${largest}, ${onPlate} on bare plate, first at ${first})`] : [];
         });
-      }, { shots: [withArtwork, withoutArtwork], rects });
+      }, { shots: [withArtwork, withoutArtwork], rects }).then(async found => {
+        // TEMPORARY CI DEBUG: print crops around the label and a DOM dump.
+        if (found.length && !process.env.NO_DEBUG_CROPS) {
+          const crops = await decoder.evaluate(async shots => Promise.all(shots.map(async data => {
+            const bitmap = await createImageBitmap(await (await fetch(`data:image/png;base64,${data}`)).blob());
+            const canvas = new OffscreenCanvas(400, 160);
+            canvas.getContext('2d').drawImage(bitmap, 480, 700, 400, 160, 0, 0, 400, 160);
+            const bytes = new Uint8Array(await (await canvas.convertToBlob()).arrayBuffer());
+            let binary = ''; for (const byte of bytes) binary += String.fromCharCode(byte); return btoa(binary);
+          })), [withArtwork, withoutArtwork]);
+          crops.forEach((crop, index) => console.error(`DEBUGCROP${index} ${crop}`));
+          console.error('DEBUGDOM ' + JSON.stringify(await page.evaluate(() => [...document.querySelectorAll('#scene-label, .scene-caption, #hero-scene, #hero-scene canvas, .scene-access, .scene-controls, .hero-footer, .hero-visual')].map(element => {
+            const box = element.getBoundingClientRect(), style = getComputedStyle(element), before = getComputedStyle(element, '::before');
+            return [element.id || element.className || element.tagName, Math.round(box.left), Math.round(box.top), Math.round(box.width), Math.round(box.height), style.zIndex, style.position, style.fontFamily.slice(0, 20), before.content, before.backgroundColor, style.transform, style.willChange];
+          }))));
+        }
+        return found;
+      });
     };
     // Without the plates (the reported problem), the same comparison must catch the sculpture behind the text at 900px.
     const withoutPlates = '.hero *:before{display:none!important}';
