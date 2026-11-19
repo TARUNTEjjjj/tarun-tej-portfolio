@@ -101,3 +101,11 @@ dialog{border:0;border-radius:20px;max-width:720px;width:calc(100% - 32px);paddi
 .pocket-note{box-shadow:0 0 0 5px #dfe9e7}
 @media(max-width:760px){.project-visual .visual-bottom{right:55px}}
 @media(max-width:480px){.project-visual .visual-bottom{right:65px}}
+
+/* The sculpture (3D or CSS) can pass behind hero text at any width, zoom or wrap. Each text block sits on an opaque plate
+   in the hero colour, feathered into the glow, so the artwork never changes the background behind its letters. The plate
+   is a z-index:-1 layer in the text's own stacking context: above the artwork, below every control and letter. */
+.hero .eyebrow,.hero h1>span,.hero-description,.hero-actions .text-link,#scene-label,#scene-status,.hero-index,.scroll-cue{position:relative;width:fit-content}
+.hero .eyebrow:before,.hero h1>span:before,.hero-description:before,.hero-actions .text-link:before,#scene-label:before,#scene-status:before,.hero-index:before,.scroll-cue:before{content:"";position:absolute;inset:-6px -8px;z-index:-1;border-radius:12px;background:var(--dark);box-shadow:0 0 18px 10px var(--dark);pointer-events:none}
+.hero .eyebrow:before,.hero h1>span:before,.hero-description:before{box-shadow:0 0 40px 22px var(--dark)}.hero h1>span:before{inset:-.12em -.1em -.14em -.08em}
+.hero h1>span{display:block}.scene-caption{z-index:2}#scene-status{margin-left:auto;margin-right:auto}

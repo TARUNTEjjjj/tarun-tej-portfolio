@@ -22,8 +22,8 @@ async function openPortfolio(page, url) {
     const { parseHeaders, applyHeaders } = await import('./pages-headers.mjs');
     const headerRules = parseHeaders(readFileSync(path.join(__dirname, '..', 'dist', '_headers'), 'utf8'));
     const policyViolations = [];
-    const newContext = async contextOptions => {
-      const productionContext = await browser.newContext(contextOptions);
+    const newContext = async (contextOptions, target = browser) => {
+      const productionContext = await target.newContext(contextOptions);
       await productionContext.route(url => url.origin === new URL(baseURL).origin, async route => {
         try {
           const response = await route.fetch({ maxRedirects: 0 });
@@ -547,6 +547,99 @@ async function openPortfolio(page, url) {
     assert.equal(new URL(doubleSlashPage.url()).pathname, '//');
     checks.push('Case studies open, copy their link and close on a //-prefixed path');
     await doubleSlash.close();
+    // The sculpture passes behind hero text at some widths (around 900px it meets the heading). Each hero text block sits
+    // on an opaque plate, so hiding the artwork must leave every pixel under the letters unchanged: in each theme, at the
+    // widths around 900px, wide layouts, 150% and 200% zoom, phones, and text wrapped by increased spacing.
+    const spacingCSS = '*{line-height:1.5!important;letter-spacing:.12em!important;word-spacing:.16em!important}p{margin-bottom:2em!important}';
+    // Chromium on Linux draws text with LCD (subpixel) antialiasing only when it is not in a separately composited
+    // layer, and showing the WebGL canvas moves the caption into one; that alone recolours its glyph edges with no
+    // change to the backing. This browser draws all text with greyscale antialiasing, so only the backing can differ.
+    const greyscaleText = await chromium.launch({ ...options, args: [...(options.args || []), '--disable-lcd-text'] });
+    try {
+      const decoder = await browser.newPage();
+      const artworkUnderText = async page => {
+        await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+        const rects = await page.evaluate(() => {
+          const found = [], range = document.createRange(), walker = document.createTreeWalker(document.querySelector('.hero'), NodeFilter.SHOW_TEXT);
+          while (walker.nextNode()) {
+            const element = walker.currentNode.parentElement;
+            if (!walker.currentNode.nodeValue.trim() || element.closest('[aria-hidden="true"], .sr-only, [hidden], .site-header')) continue;
+            range.selectNodeContents(walker.currentNode);
+            for (const box of range.getClientRects()) {
+              // Whole pixels inside each line's text box, kept within the viewport.
+              const x = Math.max(0, Math.ceil(box.left) + 1), y = Math.max(0, Math.ceil(box.top) + 1);
+              const w = Math.min(innerWidth, Math.floor(box.right) - 1) - x, h = Math.min(innerHeight, Math.floor(box.bottom) - 1) - y;
+              if (w > 0 && h > 0) found.push({ x, y, w, h, text: `${element.id || element.className || element.tagName}: ${walker.currentNode.nodeValue.trim().slice(0, 24)}` });
+            }
+          }
+          return found;
+        });
+        const shot = async () => (await page.screenshot({ scale: 'css' })).toString('base64');
+        const withArtwork = await shot();
+        await page.evaluate(() => {
+          const sheet = new CSSStyleSheet();
+          sheet.replaceSync('#hero-scene{visibility:hidden!important}');
+          document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+          return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        });
+        const withoutArtwork = await shot();
+        await page.evaluate(() => { document.adoptedStyleSheets = document.adoptedStyleSheets.slice(0, -1); });
+        return decoder.evaluate(async ({ shots, rects }) => {
+          const pixels = await Promise.all(shots.map(async data => {
+            const bitmap = await createImageBitmap(await (await fetch(`data:image/png;base64,${data}`)).blob());
+            const context = new OffscreenCanvas(bitmap.width, bitmap.height).getContext('2d', { willReadFrequently: true });
+            context.drawImage(bitmap, 0, 0);
+            return context;
+          }));
+          // Name each text box whose pixels changed, with how many, the largest channel change, how many of those were bare
+          // plate (#0b0e11) without the artwork rather than letters, and the first changed pixel's page position.
+          return rects.flatMap(({ x, y, w, h, text }) => {
+            const [a, b] = pixels.map(context => context.getImageData(x, y, w, h).data);
+            let changed = 0, largest = 0, onPlate = 0, first;
+            for (let index = 0; index < a.length; index += 4) {
+              const delta = Math.max(...[0, 1, 2].map(channel => Math.abs(a[index + channel] - b[index + channel])));
+              if (delta <= 2) continue;
+              changed++; largest = Math.max(largest, delta);
+              if (Math.abs(b[index] - 11) + Math.abs(b[index + 1] - 14) + Math.abs(b[index + 2] - 17) <= 3) onPlate++;
+              first ??= `${x + (index / 4) % w},${y + Math.floor(index / 4 / w)}`;
+            }
+            return changed ? [`${text} (${changed}/${w * h} px, max Δ${largest}, ${onPlate} on bare plate, first at ${first})`] : [];
+          });
+        }, { shots: [withArtwork, withoutArtwork], rects });
+      };
+      // Without the plates (the reported problem), the same comparison must catch the sculpture behind the text at 900px.
+      const withoutPlates = '.hero *:before{display:none!important}';
+      const showedThroughWithoutPlates = [];
+      for (const { width, height, deviceScaleFactor = 1, spaced = false } of [
+        { width: 880, height: 900 }, { width: 900, height: 900 }, { width: 960, height: 800 }, { width: 1440, height: 1000 },
+        { width: 1920, height: 1080 }, { width: 960, height: 760, deviceScaleFactor: 1.5 }, { width: 720, height: 1100, deviceScaleFactor: 2 },
+        { width: 390, height: 1100 }, { width: 900, height: 1000, spaced: true },
+      ]) {
+        const label = `${width}px${deviceScaleFactor > 1 ? ` at ${deviceScaleFactor * 100}% zoom` : ''}${spaced ? ' with increased text spacing' : ''}`;
+        const plated = await newContext({ viewport: { width, height }, deviceScaleFactor }, greyscaleText);
+        const platedPage = await plated.newPage();
+        await openPortfolio(platedPage, baseURL);
+        // Narrow layouts keep the CSS artwork until the visitor asks for 3D.
+        await platedPage.waitForFunction(() => document.querySelector('#hero-scene.scene-ready') || /Enable 3D/.test(document.querySelector('#scene-status').textContent));
+        if (!await platedPage.locator('#hero-scene.scene-ready').count()) await platedPage.locator('#enable-scene').click();
+        await platedPage.waitForSelector('#hero-scene.scene-ready');
+        if (spaced) await platedPage.evaluate(css => { const sheet = new CSSStyleSheet(); sheet.replaceSync(css); document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet]; }, spacingCSS);
+        for (const mode of ['build', 'math', 'learn']) {
+          await platedPage.locator(`[data-mode="${mode}"]`).click();
+          await platedPage.waitForTimeout(400);
+          assert.deepEqual(await artworkUnderText(platedPage), [], `${label}, ${mode} theme: the 3D artwork does not show through hero text`);
+          if (width === 900 && !spaced) {
+            await platedPage.evaluate(css => { const sheet = new CSSStyleSheet(); sheet.replaceSync(css); document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet]; }, withoutPlates);
+            showedThroughWithoutPlates.push(...await artworkUnderText(platedPage));
+            await platedPage.evaluate(() => { document.adoptedStyleSheets = document.adoptedStyleSheets.slice(0, -1); });
+          }
+        }
+        await plated.close();
+      }
+      await decoder.close();
+      assert.ok(showedThroughWithoutPlates.some(text => /^(SPAN: made|EM: tangible)/.test(text)), `Without plates the check sees the sculpture behind the heading at 900px (saw: ${showedThroughWithoutPlates.join('; ')})`);
+    } finally { await greyscaleText.close(); }
+    checks.push('Hero text keeps an opaque backing over the 3D artwork in every theme, width, zoom and wrap');
     // WCAG 1.4.12 text spacing: the hero grows instead of clipping its calls to action or running them under its footer.
     const spacing = await newContext({ viewport: { width: 1280, height: 800 } });
     const spacingPage = await spacing.newPage();
