@@ -11,10 +11,13 @@ for (const [, value] of html.matchAll(/\b(?:src|href)="([^"]+)"/g)) {
   if (value.startsWith('#')) assert(ids.includes(value.slice(1)), `Missing anchor ${value}`);
   else if (!/^(https?:|mailto:|data:)/.test(value)) assert(existsSync(resolve(root, value.replace(/^\//, ''))), `Missing local asset ${value}`);
 }
-for (const path of ['app.js', 'scene.js', 'ui-state.js', 'vendor/three.module.js', 'vendor/three.core.js']) {
+for (const path of ['app.js', 'scene.js', 'scene-math.js', 'motion-3d.js', 'ui-state.js', 'vendor/three.module.js', 'vendor/three.core.js']) {
   const source = readFileSync(resolve(root, path), 'utf8');
   for (const [, value] of source.matchAll(/(?:from\s*|import\s*\()['"](\.[^'"]+)['"]/g)) {
     assert(existsSync(resolve(root, dirname(path), value)), `Missing module ${value}`);
+  }
+  if (['scene.js', 'scene-math.js', 'motion-3d.js', 'ui-state.js'].includes(path)) {
+    assert.doesNotMatch(source, /https?:\/\//i, `${path} must remain self-contained without external URLs`);
   }
 }
 assert(readFileSync(resolve(root, 'assets/Avula-Tarun-Tej-Coding-Resume.pdf')).subarray(0, 5).equals(Buffer.from('%PDF-')), 'Résumé must be a PDF.');

@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
   "project": "tarun-tej-portfolio",
-  "version": "43b9dcfdc79c10c5f9ade3353535ce08d3c3383521e14f1c36be9a3e34b43aeb",
+  "version": "525f6280e84003699fe797d0789a2bae64e173a6266c5178ac63d7ecb72e27f0",
   "workers": [
     {
       "scope": "/",
       "script": "/offline-resources-worker.js",
-      "version": "43b9dcfdc79c10c5f9ade3353535ce08d3c3383521e14f1c36be9a3e34b43aeb"
+      "version": "525f6280e84003699fe797d0789a2bae64e173a6266c5178ac63d7ecb72e27f0"
     },
     {
       "scope": "/resources/",
       "script": "/resources/offline-worker.js",
-      "version": "43b9dcfdc79c10c5f9ade3353535ce08d3c3383521e14f1c36be9a3e34b43aeb"
+      "version": "525f6280e84003699fe797d0789a2bae64e173a6266c5178ac63d7ecb72e27f0"
     }
   ]
 }

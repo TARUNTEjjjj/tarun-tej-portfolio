@@ -15,8 +15,20 @@ function updateMotionButton() {
   button.setAttribute('aria-pressed', String(paused));
   button.firstElementChild.textContent = paused ? '▶' : 'Ⅱ';
 }
+let motionController;
+let motionLoading = false;
+function syncMotion3D() {
+  const active = !paused && !dialog.open && !reducedMotion.matches;
+  motionController?.setPaused(!active);
+  if (!active || motionController || motionLoading || sceneDisposed) return;
+  motionLoading = true;
+  import('./motion-3d.js').then(({ initMotion3D }) => {
+    if (sceneDisposed) return;
+    motionController = initMotion3D({ paused: paused || dialog.open || reducedMotion.matches, mode });
+  }).catch(() => {}).finally(() => { motionLoading = false; });
+}
 // An open case study covers the hero, so the sculpture also rests behind it.
-function applyPaused() { sculpture?.setPaused(paused || dialog.open); }
+function applyPaused() { sculpture?.setPaused(paused || dialog.open); syncMotion3D(); }
 updateMotionButton();
 document.querySelectorAll('[data-mode]').forEach(button => button.addEventListener('click', () => {
   mode = button.dataset.mode;
@@ -24,6 +36,7 @@ document.querySelectorAll('[data-mode]').forEach(button => button.addEventListen
   $('#scene-label').textContent = modeLabels[mode][0];
   $('.hero h1 em').style.color = modeLabels[mode][1];
   sculpture?.setMode(mode);
+  motionController?.setMode(mode);
 }));
 $('.motion-toggle').addEventListener('click', () => { paused = !paused; applyPaused(); updateMotionButton(); });
 reducedMotion.addEventListener('change', event => { paused = event.matches; applyPaused(); updateMotionButton(); });
@@ -117,6 +130,7 @@ window.addEventListener('pagehide', event => {
     else clearTimeout(sceneIdle);
   }
   sculpture?.destroy();
+  motionController?.destroy();
 });
 
 
@@ -347,3 +361,4 @@ $('#year').textContent = String(new Date().getFullYear());
 // fallback.js applies the static layout unless <html> carries app-ready.
 document.querySelectorAll('.project-visual[inert]').forEach(card => card.removeAttribute('inert'));
 document.documentElement.classList.add('app-ready');
+syncMotion3D();

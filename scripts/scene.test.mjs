@@ -13,6 +13,7 @@ const work = mkdtempSync(join(tmpdir(), 'portfolio-scene-'));
 after(() => rmSync(work, { recursive: true, force: true }));
 mkdirSync(join(work, 'vendor'));
 copyFileSync(join(dist, 'scene.js'), join(work, 'scene.js'));
+copyFileSync(join(dist, 'scene-math.js'), join(work, 'scene-math.js'));
 writeFileSync(join(work, 'vendor/three.module.js'), `export * from ${JSON.stringify(pathToFileURL(join(dist, 'vendor/three.core.js')).href)};
 export const { WebGLRenderer, PMREMGenerator } = globalThis.sceneTestDoubles;
 `);
@@ -70,12 +71,27 @@ class WebGLRenderer {
   // Assigning the canvas size clears it, as in WebGL.
   setPixelRatio(ratio) { this.ratio = ratio; this.showing = null; }
   setSize(width, height) { this.size = [width, height]; this.showing = null; }
-  render(scene) {
+  render(scene, camera) {
     if (this.lost) return;
-    let knot, bead, orbit;
+    let knot, bead, orbit, pointsCount = 0;
+    const shaderActivities = [];
+    const visibleSatelliteTypes = new Set();
     scene.traverse(object => {
       const type = object.geometry?.type;
-      if (type === 'TorusKnotGeometry') knot = object; else if (type === 'SphereGeometry') bead = object; else if (type === 'TorusGeometry') orbit = object;
+      if (type === 'TorusKnotGeometry') knot = object;
+      else if (type === 'SphereGeometry') bead = object;
+      else if (type === 'TorusGeometry') orbit = object;
+      else if (object.isPoints) pointsCount += object.geometry.attributes.position.count;
+      if (object.material?.isShaderMaterial && object.material.uniforms?.uActivity) {
+        shaderActivities.push(object.material.uniforms.uActivity.value);
+      }
+      if (object.visible && ['OctahedronGeometry', 'IcosahedronGeometry', 'TetrahedronGeometry'].includes(type)) {
+        // Only count satellites whose parent assembly group is visible.
+        let cur = object;
+        let shown = true;
+        while (cur) { if (!cur.visible) { shown = false; break; } cur = cur.parent; }
+        if (shown) visibleSatelliteTypes.add(type);
+      }
     });
     const [, rim] = scene.children.filter(object => object.isDirectionalLight);
     this.frames += 1;
@@ -85,6 +101,10 @@ class WebGLRenderer {
       knot: [knot.geometry.parameters.tubularSegments, knot.geometry.parameters.radialSegments],
       ratio: this.ratio,
       environmentCurrent: scene.environment?.context === this.context,
+      cameraPos: camera ? [camera.position.x, camera.position.y, camera.position.z] : null,
+      pointsCount,
+      shaderActivities,
+      visibleSatelliteTypes: [...visibleSatelliteTypes].sort(),
     };
   }
   dispose() {}
@@ -111,12 +131,12 @@ function start(options = {}, { size = wide, ...display } = {}) {
   callbacks.clear();
   const box = { ...size };
   const classes = new Set();
-  const container = {
-    size: box, dataset: {},
+  const container = Object.assign(new EventTarget(), {
+    size: box, dataset: {}, style: {},
     classList: { add: name => classes.add(name), remove: name => classes.delete(name), contains: name => classes.has(name) },
     getBoundingClientRect: () => ({ left: 0, top: 0, width: box.width, height: box.height }),
-    appendChild() {}, addEventListener() {}, removeEventListener() {},
-  };
+    appendChild() {},
+  });
   const sculpture = initScene(container, options);
   const renderer = renderers.at(-1);
   advance(100);
@@ -194,4 +214,47 @@ test('a restored WebGL context draws the sculpture again with a new environment 
     assert.equal(renderer.showing.environmentCurrent, true, 'The environment map is rendered again on the restored context');
     sculpture.destroy();
   }
+});
+
+test('modes activate distinct satellite geometries, starfield, and shader activity pauses under reduced motion', () => {
+  const { sculpture, renderer } = start({ mode: 'build', paused: false });
+  assert.ok(renderer.showing.pointsCount >= 110, 'Constellation starfield is populated');
+  assert.deepEqual(renderer.showing.visibleSatelliteTypes, ['OctahedronGeometry']);
+  assert.deepEqual(renderer.showing.shaderActivities, [1, 1]);
+
+  sculpture.setMode('math');
+  advance(900);
+  assert.deepEqual(renderer.showing.visibleSatelliteTypes, ['IcosahedronGeometry']);
+
+  sculpture.setMode('learn');
+  advance(900);
+  assert.deepEqual(renderer.showing.visibleSatelliteTypes, ['TetrahedronGeometry']);
+
+  sculpture.setPaused(true);
+  advance(200);
+  assert.deepEqual(renderer.showing.shaderActivities, [0, 0], 'Shader activity stops when paused');
+  const framesAtPause = renderer.frames;
+  advance(500);
+  assert.equal(renderer.frames, framesAtPause, 'No continuous animation frames run while paused');
+  sculpture.destroy();
+});
+
+test('pointer drag-to-orbit updates camera azimuth/elevation and double-click resets it', () => {
+  const { container, sculpture, renderer } = start({ mode: 'build', paused: false });
+  const initialCam = [...renderer.showing.cameraPos];
+
+  container.dispatchEvent(Object.assign(new Event('pointerdown'), { pointerType: 'mouse', button: 0, pointerId: 1, clientX: 200, clientY: 200 }));
+  container.dispatchEvent(Object.assign(new Event('pointermove'), { pointerType: 'mouse', pointerId: 1, clientX: 340, clientY: 270 }));
+  container.dispatchEvent(Object.assign(new Event('pointerup'), { pointerType: 'mouse', pointerId: 1, clientX: 340, clientY: 270 }));
+  advance(400);
+
+  const draggedCam = [...renderer.showing.cameraPos];
+  assert.notDeepEqual(draggedCam, initialCam, 'Dragging changes camera spherical coordinates');
+  assert.ok(Math.abs(draggedCam[0]) > 0.25 && Math.abs(draggedCam[1]) > 0.15);
+
+  container.dispatchEvent(new Event('dblclick'));
+  advance(1500);
+  const resetCam = renderer.showing.cameraPos;
+  assert.ok(Math.hypot(resetCam[0] - initialCam[0], resetCam[1] - initialCam[1]) < 0.05, 'Double-click smoothly returns orbit near origin');
+  sculpture.destroy();
 });
