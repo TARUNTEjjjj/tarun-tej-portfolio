@@ -88,15 +88,93 @@ async function openPortfolio(page, url) {
     assert.deepEqual(await page.locator('.reveal').evaluateAll(elements => elements.filter(element => getComputedStyle(element).opacity !== '1').length), 0, 'Unrevealed sections print');
     await page.emulateMedia({ media: 'screen' });
     checks.push('Printing includes sections that were not scrolled into view');
+    await page.waitForSelector('html.motion-3d');
+    const heroCanvas = page.locator('#hero-scene canvas');
+    const colorStatsPage = await browser.newPage();
+    const sampleCanvasStats = async () => {
+      const pngBase64 = (await heroCanvas.screenshot()).toString('base64');
+      return colorStatsPage.evaluate(async data => {
+        const bitmap = await createImageBitmap(await (await fetch(`data:image/png;base64,${data}`)).blob());
+        const ctx = new OffscreenCanvas(bitmap.width, bitmap.height).getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(bitmap, 0, 0);
+        const pixels = ctx.getImageData(0, 0, bitmap.width, bitmap.height).data;
+        let bright = 0, sumR = 0, sumG = 0, sumB = 0;
+        for (let i = 0; i < pixels.length; i += 4) {
+          const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2];
+          if (r + g + b > 70) { bright++; sumR += r; sumG += g; sumB += b; }
+        }
+        return { bright, sumR, sumG, sumB };
+      }, pngBase64);
+    };
+    const frameA = await heroCanvas.screenshot();
+    const statsA = await sampleCanvasStats();
+    assert.ok(statsA.bright > 2500, `Animated WebGL sculpture renders non-blank pixels (saw ${statsA.bright})`);
+    await page.waitForTimeout(380);
+    const frameB = await heroCanvas.screenshot();
+    assert.notEqual(Buffer.compare(frameA, frameB), 0, 'Animated WebGL frames advance continuously when unpaused');
+
+    const visualBox = await page.locator('.hero-visual').boundingBox();
+    const dragStart = { x: visualBox.x + visualBox.width * 0.66, y: visualBox.y + visualBox.height * 0.48 };
+    const dragEnd = { x: visualBox.x + visualBox.width * 0.80, y: visualBox.y + visualBox.height * 0.36 };
+    await page.mouse.move(dragStart.x, dragStart.y);
+    await page.mouse.down();
+    await page.mouse.move(dragEnd.x, dragEnd.y, { steps: 6 });
+    await page.mouse.up();
+    await page.waitForTimeout(180);
+    const orbitData = await page.locator('#hero-scene').evaluate(el => ({ yaw: Number(el.dataset.orbitYaw || 0), pitch: Number(el.dataset.orbitPitch || 0) }));
+    assert.ok(Math.abs(orbitData.yaw) > 0.1 && Math.abs(orbitData.pitch) > 0.1, `Pointer drag updates 3D orbit (${JSON.stringify(orbitData)})`);
+    await page.mouse.dblclick(dragEnd.x, dragEnd.y);
+    await page.waitForFunction(() => document.querySelector('#hero-scene').dataset.orbitYaw === '0.000');
+    await page.waitForTimeout(450);
+
+    const modeStats = {};
     for (const mode of ['math', 'learn', 'build']) {
       await page.locator(`[data-mode="${mode}"]`).click();
       assert.equal(await page.locator(`[data-mode="${mode}"]`).getAttribute('aria-pressed'), 'true');
+      await page.waitForTimeout(480);
+      modeStats[mode] = await sampleCanvasStats();
     }
+    await colorStatsPage.close();
+    assert.ok(modeStats.math.sumR > modeStats.math.sumB, `math mode renders warm amber spectrum (${JSON.stringify(modeStats.math)})`);
+    assert.ok(modeStats.learn.sumB > modeStats.learn.sumG, `learn mode renders violet spectrum (${JSON.stringify(modeStats.learn)})`);
+    assert.ok(modeStats.build.sumG > modeStats.build.sumR && modeStats.build.sumB > modeStats.build.sumR, `build mode renders cyan spectrum (${JSON.stringify(modeStats.build)})`);
+
+    await page.evaluate(() => window.scrollTo({ top: 420, behavior: 'instant' }));
+    await page.waitForTimeout(260);
+    const scrollTelemetry = await page.evaluate(() => ({
+      parallax: Number(document.querySelector('#hero-scene').dataset.scrollParallax || 0),
+      progress: Number(document.documentElement.dataset.scrollProgress || 0),
+      telemetryVisible: document.querySelector('.scroll-telemetry')?.classList.contains('visible'),
+    }));
+    assert.ok(scrollTelemetry.parallax > 0.2 && scrollTelemetry.progress > 0 && scrollTelemetry.telemetryVisible, `Scroll parallax & telemetry respond (${JSON.stringify(scrollTelemetry)})`);
+
+    const neuralCard = page.locator('.project-visual[data-project="neural"]');
+    await neuralCard.scrollIntoViewIfNeeded();
+    const neuralBox = await neuralCard.boundingBox();
+    await page.mouse.move(neuralBox.x + neuralBox.width * 0.78, neuralBox.y + neuralBox.height * 0.26);
+    await page.waitForTimeout(240);
+    const tiltState = await neuralCard.evaluate(el => ({
+      active: el.dataset.tiltActive,
+      tiltX: el.style.getPropertyValue('--tilt-x'),
+      tiltY: el.style.getPropertyValue('--tilt-y'),
+      glareO: Number(el.style.getPropertyValue('--glare-o') || 0),
+    }));
+    assert.equal(tiltState.active, 'true', 'Hovering a project card activates 3D tilt');
+    assert.ok(tiltState.tiltX && tiltState.tiltY && tiltState.glareO > 0.2, `Card tilt & glare active (${JSON.stringify(tiltState)})`);
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await page.mouse.move(10, 10);
+    await page.waitForTimeout(240);
+
     await page.locator('.motion-toggle').click();
     assert.equal(await page.locator('.motion-toggle').getAttribute('aria-pressed'), 'true');
     assert.equal(await page.locator('.motion-toggle').getAttribute('aria-label'), 'Pause animation');
+    assert.equal(await page.evaluate(() => document.documentElement.classList.contains('motion-3d')), false, 'Pausing disables 3D card motion');
+    const pausedA = await heroCanvas.screenshot();
+    await page.waitForTimeout(300);
+    const pausedB = await heroCanvas.screenshot();
+    assert.equal(Buffer.compare(pausedA, pausedB), 0, 'WebGL frames stay cleanly frozen while paused');
     await page.screenshot({ path: 'qa/desktop-hero.png' });
-    checks.push('3D renders; all themes and pause control work');
+    checks.push('3D renders; animated frames, drag-to-orbit, scroll parallax, card tilt, all themes and pause control work');
     // Resizing clears a WebGL canvas, and ResizeObserver runs after the frame's animation callback has drawn. This reads
     // the canvas straight after the scene's own observer (observers run in creation order), which is what that frame
     // shows: the drawn pixels in a central block, and their summed brightness.
@@ -319,9 +397,14 @@ async function openPortfolio(page, url) {
     await context.close();
     const reduced = await newContext({ reducedMotion: 'reduce' });
     const reducedPage = await reduced.newPage();
+    const reducedMotionRequests = [];
+    reducedPage.on('request', request => { if (new URL(request.url()).pathname === '/motion-3d.js') reducedMotionRequests.push(request.url()); });
     await openPortfolio(reducedPage, baseURL);
+    await reducedPage.waitForTimeout(200);
     assert.equal(await reducedPage.locator('.motion-toggle').getAttribute('aria-pressed'), 'true');
     assert.equal(await reducedPage.locator('html').evaluate(element => getComputedStyle(element).scrollBehavior), 'auto');
+    assert.equal(reducedMotionRequests.length, 0, 'motion-3d.js is not loaded under reduced-motion preference');
+    assert.equal(await reducedPage.evaluate(() => document.documentElement.classList.contains('motion-3d')), false);
     checks.push('Reduced-motion preference starts with animation paused');
     // WCAG AA text contrast (4.5:1, or 3:1 for large text) against each text run's solid background, faded by opacity.
     // Out of scope: decorative artwork (aria-hidden), text on gradient card art, and the header, which is drawn over
