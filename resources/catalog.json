@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "project": "tarun-tej-portfolio",
   "title": "Tarun’s engineering resource shelf",
-  "fetchedAt": "2026-11-26T13:13:53.249Z",
-  "attemptedAt": "2026-11-26T13:13:34.290Z",
+  "fetchedAt": "2026-11-27T13:11:41.207Z",
+  "attemptedAt": "2026-11-27T13:11:23.586Z",
   "status": "live",
   "errors": [],
   "excludedSeeds": [],
@@ -43,13 +43,13 @@
       "license": null,
       "category": "web",
       "sourceQuery": "topic:web-development",
-      "fetchedAt": "2026-11-26T13:13:38.715Z",
+      "fetchedAt": "2026-11-27T13:11:27.597Z",
       "provenance": "github",
       "stale": false,
       "sourceQueries": [
         "topic:web-development"
       ],
-      "score": 85.08,
+      "score": 85.07,
       "reason": "Web engineering resource; 3947 GitHub stars."
     },
     {
@@ -70,7 +70,7 @@
       "license": "MIT",
       "category": "web",
       "sourceQuery": "topic:web-development",
-      "fetchedAt": "2026-11-26T13:13:38.715Z",
+      "fetchedAt": "2026-11-27T13:11:27.597Z",
       "provenance": "github",
       "stale": false,
       "sourceQueries": [
@@ -106,20 +106,20 @@
         "web-development",
         "website-reconstruction"
       ],
-      "stars": 787,
-      "forks": 52,
+      "stars": 809,
+      "forks": 53,
       "pushedAt": "2026-11-17T08:54:35.000Z",
       "license": "Apache-2.0",
       "category": "web",
       "sourceQuery": "topic:web-development",
-      "fetchedAt": "2026-11-26T13:13:38.715Z",
+      "fetchedAt": "2026-11-27T13:11:27.597Z",
       "provenance": "github",
       "stale": false,
       "sourceQueries": [
         "topic:web-development"
       ],
-      "score": 84.24,
-      "reason": "Web engineering resource; 787 GitHub stars."
+      "score": 84.27,
+      "reason": "Web engineering resource; 809 GitHub stars."
     },
     {
       "id": 376740449,
@@ -154,13 +154,13 @@
       "license": null,
       "category": "web",
       "sourceQuery": "topic:web-development",
-      "fetchedAt": "2026-11-26T13:13:38.715Z",
+      "fetchedAt": "2026-11-27T13:11:27.597Z",
       "provenance": "github",
       "stale": false,
       "sourceQueries": [
         "topic:web-development"
       ],
-      "score": 83.57,
+      "score": 83.55,
       "reason": "Web engineering resource; 1733 GitHub stars."
     },
     {
@@ -188,7 +188,7 @@
       "license": "MIT",
       "category": "web",
       "sourceQuery": "topic:web-development",
-      "fetchedAt": "2026-11-26T13:13:38.715Z",
+      "fetchedAt": "2026-11-27T13:11:27.597Z",
       "provenance": "github",
       "stale": false,
       "sourceQueries": [
@@ -222,20 +222,20 @@
         "systems",
         "web-development"
       ],
-      "stars": 84994,
-      "forks": 11665,
+      "stars": 85002,
+      "forks": 11672,
       "pushedAt": "2026-11-24T17:13:22.000Z",
       "license": null,
       "category": "web",
       "sourceQuery": "topic:web-development",
-      "fetchedAt": "2026-11-26T13:13:38.715Z",
+      "fetchedAt": "2026-11-27T13:11:27.597Z",
       "provenance": "github",
       "stale": false,
       "sourceQueries": [
         "topic:web-development"
       ],
-      "score": 64.6,
-      "reason": "Web engineering resource; 84994 GitHub stars."
+      "score": 64.57,
+      "reason": "Web engineering resource; 85002 GitHub stars."
     },
     {
       "id": 107111421,
@@ -259,20 +259,20 @@
         "rules",
         "web-development"
       ],
-      "stars": 74826,
-      "forks": 6773,
+      "stars": 74833,
+      "forks": 6775,
       "pushedAt": "2026-10-31T05:44:22.000Z",
       "license": "MIT",
       "category": "web",
       "sourceQuery": "topic:web-development",
-      "fetchedAt": "2026-11-26T13:13:38.715Z",
+      "fetchedAt": "2026-11-27T13:11:27.597Z",
       "provenance": "github",
       "stale": false,
       "sourceQueries": [
         "topic:web-development"
       ],
-      "score": 63.7,
-      "reason": "Web engineering resource; 74826 GitHub stars."
+      "score": 63.67,
+      "reason": "Web engineering resource; 74833 GitHub stars."
     },
     {
       "id": 307489284,
@@ -285,20 +285,20 @@
         "web-application",
         "web-development"
       ],
-      "stars": 33477,
-      "forks": 2804,
-      "pushedAt": "2026-11-26T06:27:46.000Z",
+      "stars": 33489,
+      "forks": 2803,
+      "pushedAt": "2026-11-27T00:44:00.000Z",
       "license": "MIT",
       "category": "web",
       "sourceQuery": "topic:web-development",
-      "fetchedAt": "2026-11-26T13:13:38.715Z",
+      "fetchedAt": "2026-11-27T13:11:27.597Z",
       "provenance": "github",
       "stale": false,
       "sourceQueries": [
         "topic:web-development"
       ],
-      "score": 62.62,
-      "reason": "Web engineering resource; 33477 GitHub stars."
+      "score": 62.61,
+      "reason": "Web engineering resource; 33489 GitHub stars."
     },
     {
       "id": 56717493,
@@ -318,20 +318,20 @@
         "twitter-cards",
         "web-development"
       ],
-      "stars": 30273,
+      "stars": 30269,
       "forks": 1905,
       "pushedAt": "2026-11-24T04:35:47.000Z",
       "license": null,
       "category": "web",
       "sourceQuery": "topic:web-development",
-      "fetchedAt": "2026-11-26T13:13:38.715Z",
+      "fetchedAt": "2026-11-27T13:11:27.597Z",
       "provenance": "github",
       "stale": false,
       "sourceQueries": [
         "topic:web-development"
       ],
-      "score": 62.34,
-      "reason": "Web engineering resource; 30273 GitHub stars."
+      "score": 62.31,
+      "reason": "Web engineering resource; 30269 GitHub stars."
     },
     {
       "id": 654870350,
@@ -349,12 +349,12 @@
         "web-framework"
       ],
       "stars": 25572,
-      "forks": 1125,
-      "pushedAt": "2026-11-26T11:56:06.000Z",
+      "forks": 1126,
+      "pushedAt": "2026-11-27T13:00:03.000Z",
       "license": null,
       "category": "web",
       "sourceQuery": "topic:web-development",
-      "fetchedAt": "2026-11-26T13:13:38.715Z",
+      "fetchedAt": "2026-11-27T13:11:27.597Z",
       "provenance": "github",
       "stale": false,
       "sourceQueries": [
@@ -377,20 +377,20 @@
         "web-development",
         "websockets"
       ],
-      "stars": 24995,
-      "forks": 1928,
-      "pushedAt": "2026-11-26T05:41:55.000Z",
+      "stars": 24996,
+      "forks": 1931,
+      "pushedAt": "2026-11-26T16:10:46.000Z",
       "license": "Apache-2.0",
       "category": "web",
       "sourceQuery": "topic:web-development",
-      "fetchedAt": "2026-11-26T13:13:38.715Z",
+      "fetchedAt": "2026-11-27T13:11:27.597Z",
       "provenance": "github",
       "stale": false,
       "sourceQueries": [
         "topic:web-development"
       ],
-      "score": 61.98,
-      "reason": "Web engineering resource; 24995 GitHub stars."
+      "score": 61.97,
+      "reason": "Web engineering resource; 24996 GitHub stars."
     },
     {
       "id": 117372806,
@@ -414,20 +414,20 @@
         "js-questions",
         "web-development"
       ],
-      "stars": 44000,
+      "stars": 43999,
       "forks": 5915,
       "pushedAt": "2026-10-05T08:51:50.000Z",
       "license": "MIT",
       "category": "web",
       "sourceQuery": "topic:web-development",
-      "fetchedAt": "2026-11-26T13:13:38.715Z",
+      "fetchedAt": "2026-11-27T13:11:27.597Z",
       "provenance": "github",
       "stale": false,
       "sourceQueries": [
         "topic:web-development"
       ],
-      "score": 61.97,
-      "reason": "Web engineering resource; 44000 GitHub stars."
+      "score": 61.95,
+      "reason": "Web engineering resource; 43999 GitHub stars."
     },
     {
       "id": 86075041,
@@ -451,20 +451,20 @@
         "vector",
         "visualization"
       ],
-      "stars": 5375,
+      "stars": 5374,
       "forks": 184,
       "pushedAt": "2026-10-28T00:50:04.000Z",
       "license": "Apache-2.0",
       "category": "creative",
       "sourceQuery": "topic:creative-coding",
-      "fetchedAt": "2026-11-26T13:13:48.314Z",
+      "fetchedAt": "2026-11-27T13:11:36.430Z",
       "provenance": "github",
       "stale": false,
       "sourceQueries": [
         "topic:creative-coding"
       ],
-      "score": 87.9,
-      "reason": "Creative coding and visualization resource; 5375 GitHub stars."
+      "score": 87.88,
+      "reason": "Creative coding and visualization resource; 5374 GitHub stars."
     },
     {
       "id": 942128149,
@@ -489,13 +489,13 @@
       "license": null,
       "category": "creative",
       "sourceQuery": "topic:creative-coding",
-      "fetchedAt": "2026-11-26T13:13:48.314Z",
+      "fetchedAt": "2026-11-27T13:11:36.430Z",
       "provenance": "github",
       "stale": false,
       "sourceQueries": [
         "topic:creative-coding"
       ],
-      "score": 78.68,
+      "score": 78.67,
       "reason": "Creative coding and visualization resource; 714 GitHub stars."
     },
     {
@@ -524,20 +524,20 @@
         "svg-editor",
         "vector-graphics"
       ],
-      "stars": 28045,
-      "forks": 1340,
-      "pushedAt": "2026-11-26T12:47:13.000Z",
+      "stars": 28055,
+      "forks": 1343,
+      "pushedAt": "2026-11-27T10:08:28.000Z",
       "license": "Apache-2.0",
       "category": "creative",
       "sourceQuery": "topic:creative-coding",
-      "fetchedAt": "2026-11-26T13:13:48.314Z",
+      "fetchedAt": "2026-11-27T13:11:36.430Z",
       "provenance": "github",
       "stale": false,
       "sourceQueries": [
         "topic:creative-coding"
       ],
       "score": 77.24,
-      "reason": "Creative coding and visualization resource; 28045 GitHub stars."
+      "reason": "Creative coding and visualization resource; 28055 GitHub stars."
     },
     {
       "id": 8424040,
@@ -557,21 +557,21 @@
         "processing",
         "sound"
       ],
-      "stars": 24435,
-      "forks": 3927,
-      "pushedAt": "2026-11-24T22:29:33.000Z",
+      "stars": 24434,
+      "forks": 3928,
+      "pushedAt": "2026-11-27T10:05:56.000Z",
       "license": "LGPL-2.1",
       "category": "creative",
       "sourceQuery": "repo:processing/p5.js",
-      "fetchedAt": "2026-11-26T13:13:53.249Z",
+      "fetchedAt": "2026-11-27T13:11:41.207Z",
       "provenance": "github",
       "stale": false,
       "sourceQueries": [
         "topic:creative-coding",
         "repo:processing/p5.js"
       ],
-      "score": 76.9,
-      "reason": "Creative coding and visualization resource; 24435 GitHub stars."
+      "score": 76.94,
+      "reason": "Creative coding and visualization resource; 24434 GitHub stars."
     },
     {
       "id": 1389011744,
@@ -600,20 +600,20 @@
         "video-production",
         "webgl"
       ],
-      "stars": 21414,
-      "forks": 2755,
+      "stars": 21822,
+      "forks": 2824,
       "pushedAt": "2026-11-26T09:48:06.000Z",
       "license": null,
       "category": "creative",
       "sourceQuery": "topic:creative-coding",
-      "fetchedAt": "2026-11-26T13:13:48.314Z",
+      "fetchedAt": "2026-11-27T13:11:36.430Z",
       "provenance": "github",
       "stale": false,
       "sourceQueries": [
         "topic:creative-coding"
       ],
-      "score": 76.65,
-      "reason": "Creative coding and visualization resource; 21414 GitHub stars."
+      "score": 76.66,
+      "reason": "Creative coding and visualization resource; 21822 GitHub stars."
     },
     {
       "id": 345337,
@@ -637,20 +637,20 @@
         "video",
         "windows"
       ],
-      "stars": 10473,
-      "forks": 2565,
-      "pushedAt": "2026-11-26T06:51:47.000Z",
+      "stars": 10476,
+      "forks": 2566,
+      "pushedAt": "2026-11-27T09:12:30.000Z",
       "license": null,
       "category": "creative",
       "sourceQuery": "topic:creative-coding",
-      "fetchedAt": "2026-11-26T13:13:48.314Z",
+      "fetchedAt": "2026-11-27T13:11:36.430Z",
       "provenance": "github",
       "stale": false,
       "sourceQueries": [
         "topic:creative-coding"
       ],
-      "score": 75.09,
-      "reason": "Creative coding and visualization resource; 10473 GitHub stars."
+      "score": 75.1,
+      "reason": "Creative coding and visualization resource; 10476 GitHub stars."
     },
     {
       "id": 1390273274,
@@ -668,20 +668,20 @@
         "prompts",
         "threejs"
       ],
-      "stars": 16559,
-      "forks": 1779,
+      "stars": 16627,
+      "forks": 1786,
       "pushedAt": "2026-10-13T14:46:44.000Z",
       "license": "MIT",
       "category": "creative",
       "sourceQuery": "topic:creative-coding",
-      "fetchedAt": "2026-11-26T13:13:48.314Z",
+      "fetchedAt": "2026-11-27T13:11:36.430Z",
       "provenance": "github",
       "stale": false,
       "sourceQueries": [
         "topic:creative-coding"
       ],
-      "score": 75.02,
-      "reason": "Creative coding and visualization resource; 16559 GitHub stars."
+      "score": 75.01,
+      "reason": "Creative coding and visualization resource; 16627 GitHub stars."
     },
     {
       "id": 81895167,
@@ -700,11 +700,11 @@
       ],
       "stars": 6084,
       "forks": 212,
-      "pushedAt": "2026-11-26T11:13:45.000Z",
+      "pushedAt": "2026-11-27T10:16:26.000Z",
       "license": "MIT",
       "category": "creative",
       "sourceQuery": "topic:creative-coding",
-      "fetchedAt": "2026-11-26T13:13:48.314Z",
+      "fetchedAt": "2026-11-27T13:11:36.430Z",
       "provenance": "github",
       "stale": false,
       "sourceQueries": [
@@ -737,20 +737,20 @@
         "shaders",
         "webgl"
       ],
-      "stars": 15660,
-      "forks": 1022,
+      "stars": 15664,
+      "forks": 1026,
       "pushedAt": "2026-07-21T15:01:30.000Z",
       "license": null,
       "category": "creative",
       "sourceQuery": "topic:creative-coding",
-      "fetchedAt": "2026-11-26T13:13:48.314Z",
+      "fetchedAt": "2026-11-27T13:11:36.430Z",
       "provenance": "github",
       "stale": false,
       "sourceQueries": [
         "topic:creative-coding"
       ],
-      "score": 73.38,
-      "reason": "Creative coding and visualization resource; 15660 GitHub stars."
+      "score": 73.36,
+      "reason": "Creative coding and visualization resource; 15664 GitHub stars."
     },
     {
       "id": 1342930695,
@@ -774,20 +774,20 @@
         "typography",
         "web-design"
       ],
-      "stars": 5494,
-      "forks": 771,
+      "stars": 5520,
+      "forks": 775,
       "pushedAt": "2026-09-30T13:31:42.000Z",
       "license": "MIT",
       "category": "creative",
       "sourceQuery": "topic:creative-coding",
-      "fetchedAt": "2026-11-26T13:13:48.314Z",
+      "fetchedAt": "2026-11-27T13:11:36.430Z",
       "provenance": "github",
       "stale": false,
       "sourceQueries": [
         "topic:creative-coding"
       ],
-      "score": 72.35,
-      "reason": "Creative coding and visualization resource; 5494 GitHub stars."
+      "score": 72.34,
+      "reason": "Creative coding and visualization resource; 5520 GitHub stars."
     },
     {
       "id": 1381356320,
@@ -816,20 +816,20 @@
         "procedural-generation",
         "skill"
       ],
-      "stars": 2061,
-      "forks": 178,
+      "stars": 2089,
+      "forks": 182,
       "pushedAt": "2026-11-05T20:35:49.000Z",
       "license": "Apache-2.0",
       "category": "creative",
       "sourceQuery": "topic:creative-coding",
-      "fetchedAt": "2026-11-26T13:13:48.314Z",
+      "fetchedAt": "2026-11-27T13:11:36.430Z",
       "provenance": "github",
       "stale": false,
       "sourceQueries": [
         "topic:creative-coding"
       ],
-      "score": 71.03,
-      "reason": "Creative coding and visualization resource; 2061 GitHub stars."
+      "score": 71.04,
+      "reason": "Creative coding and visualization resource; 2089 GitHub stars."
     },
     {
       "id": 510787453,
@@ -847,17 +847,17 @@
       ],
       "stars": 1399,
       "forks": 127,
-      "pushedAt": "2026-11-23T17:55:58.000Z",
+      "pushedAt": "2026-11-27T12:41:34.000Z",
       "license": "MIT",
       "category": "creative",
       "sourceQuery": "topic:creative-coding",
-      "fetchedAt": "2026-11-26T13:13:48.314Z",
+      "fetchedAt": "2026-11-27T13:11:36.430Z",
       "provenance": "github",
       "stale": false,
       "sourceQueries": [
         "topic:creative-coding"
       ],
-      "score": 70.65,
+      "score": 70.73,
       "reason": "Creative coding and visualization resource; 1399 GitHub stars."
     }
   ]
